@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { CartContent } from '@/components/CartContent';
 import { isValidLocale } from '@/lib/i18n/config';
 import { getDictionary } from '@/lib/i18n/get-dictionary';
-import { getProducts } from '@/lib/products';
+import { getProducts } from '@/lib/contentful/queries';
 
 export async function generateMetadata({
   params,

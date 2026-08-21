@@ -10,15 +10,28 @@ import {
 } from 'lucide-react';
 import type { Locale } from '@/lib/i18n/config';
 import type { Dictionary } from '@/lib/i18n/get-dictionary';
+import type { BrandConfig, Category } from '@/lib/types';
 
 export function Footer({
   dict,
   locale,
+  brand,
+  categories,
 }: {
   dict: Dictionary;
   locale: Locale;
+  brand: BrandConfig;
+  categories: Category[];
 }) {
   const t = dict.footer;
+
+  const socials = [
+    { href: brand.socials.facebook, icon: Facebook, label: 'Facebook' },
+    { href: brand.socials.instagram, icon: Instagram, label: 'Instagram' },
+    { href: brand.socials.youtube, icon: Youtube, label: 'YouTube' },
+  ].filter((social): social is { href: string; icon: typeof Facebook; label: string } =>
+    Boolean(social.href)
+  );
 
   return (
     <footer className="mt-14 bg-[#142016] text-cream">
@@ -26,47 +39,46 @@ export function Footer({
         <div className="grid gap-8 md:grid-cols-[1.5fr_1fr_1fr_1fr]">
           <div>
             <Link href={`/${locale}`} className="flex items-center gap-3">
-              <span className="grid h-10 w-10 place-items-center rounded-full bg-leaf text-white">
-                <Sprout size={20} />
-              </span>
+              {brand.logoUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={brand.logoUrl}
+                  alt={brand.name}
+                  className="h-10 w-10 rounded-full bg-white object-cover"
+                />
+              ) : (
+                <span className="grid h-10 w-10 place-items-center rounded-full bg-leaf text-white">
+                  <Sprout size={20} />
+                </span>
+              )}
 
               <div>
-                <h2 className="text-xl font-black leading-none">{t.brand}</h2>
+                <h2 className="text-xl font-black leading-none">{brand.name}</h2>
                 <p className="text-[10px] uppercase tracking-widest text-cream/60">
-                  {t.organicFoods}
+                  {brand.tagline || t.organicFoods}
                 </p>
               </div>
             </Link>
 
             <p className="mt-4 max-w-sm text-sm leading-7 text-cream/65">
-              {t.tagline}
+              {brand.footerAbout || t.tagline}
             </p>
 
-            <div className="mt-5 flex gap-3">
-              <Link
-                href="https://facebook.com"
-                target="_blank"
-                className="grid h-9 w-9 place-items-center rounded-full bg-white/10 text-cream transition hover:bg-leaf"
-              >
-                <Facebook size={16} />
-              </Link>
-
-              <Link
-                href="https://instagram.com"
-                target="_blank"
-                className="grid h-9 w-9 place-items-center rounded-full bg-white/10 text-cream transition hover:bg-leaf"
-              >
-                <Instagram size={16} />
-              </Link>
-
-              <Link
-                href="https://youtube.com"
-                target="_blank"
-                className="grid h-9 w-9 place-items-center rounded-full bg-white/10 text-cream transition hover:bg-leaf"
-              >
-                <Youtube size={16} />
-              </Link>
-            </div>
+            {socials.length > 0 ? (
+              <div className="mt-5 flex gap-3">
+                {socials.map((social) => (
+                  <Link
+                    key={social.label}
+                    href={social.href}
+                    target="_blank"
+                    aria-label={social.label}
+                    className="grid h-9 w-9 place-items-center rounded-full bg-white/10 text-cream transition hover:bg-leaf"
+                  >
+                    <social.icon size={16} />
+                  </Link>
+                ))}
+              </div>
+            ) : null}
           </div>
 
           <div>
@@ -78,18 +90,15 @@ export function Footer({
               <Link href={`/${locale}/products`} className="block hover:text-white">
                 {t.allProducts}
               </Link>
-              <Link href={`/${locale}/category/ghee`} className="block hover:text-white">
-                {t.ghee}
-              </Link>
-              <Link href={`/${locale}/category/honey`} className="block hover:text-white">
-                {t.honey}
-              </Link>
-              <Link href={`/${locale}/category/oil`} className="block hover:text-white">
-                {t.oils}
-              </Link>
-              <Link href={`/${locale}/category/pantry`} className="block hover:text-white">
-                {t.pantry}
-              </Link>
+              {categories.map((category) => (
+                <Link
+                  key={category.slug}
+                  href={`/${locale}/category/${category.slug}`}
+                  className="block hover:text-white"
+                >
+                  {category.title}
+                </Link>
+              ))}
             </div>
           </div>
 
@@ -120,33 +129,39 @@ export function Footer({
             </h3>
 
             <div className="mt-4 space-y-4 text-sm text-cream/65">
-              <a
-                href="tel:+8809613821489"
-                className="flex items-start gap-2 hover:text-white"
-              >
-                <Phone size={16} className="mt-0.5 text-leaf" />
-                +8809613821489
-              </a>
+              {brand.phone ? (
+                <a
+                  href={`tel:${brand.phone}`}
+                  className="flex items-start gap-2 hover:text-white"
+                >
+                  <Phone size={16} className="mt-0.5 text-leaf" />
+                  {brand.phoneDisplay || brand.phone}
+                </a>
+              ) : null}
 
-              <a
-                href="mailto:hello@deshiyoshad.com"
-                className="flex items-start gap-2 hover:text-white"
-              >
-                <Mail size={16} className="mt-0.5 text-leaf" />
-                hello@deshiyoshad.com
-              </a>
+              {brand.email ? (
+                <a
+                  href={`mailto:${brand.email}`}
+                  className="flex items-start gap-2 hover:text-white"
+                >
+                  <Mail size={16} className="mt-0.5 text-leaf" />
+                  {brand.email}
+                </a>
+              ) : null}
 
-              <p className="flex items-start gap-2">
-                <MapPin size={16} className="mt-0.5 text-leaf" />
-                {t.location}
-              </p>
+              {brand.address ? (
+                <p className="flex items-start gap-2">
+                  <MapPin size={16} className="mt-0.5 text-leaf" />
+                  {brand.address}
+                </p>
+              ) : null}
             </div>
           </div>
         </div>
 
         <div className="mt-8 flex flex-col gap-3 border-t border-white/10 pt-5 text-xs text-cream/50 md:flex-row md:items-center md:justify-between">
           <p>
-            © {new Date().getFullYear()} {t.brand}. {t.rights}
+            © {new Date().getFullYear()} {brand.name}. {t.rights}
           </p>
 
           <div className="flex gap-4">

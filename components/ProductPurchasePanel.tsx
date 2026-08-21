@@ -22,11 +22,13 @@ type ProductOption = {
 
 export function ProductPurchasePanel({
   product,
+  contactPhone = '+8809613821489',
 }: {
   product: CartProduct & {
     options?: ProductOption[];
     compareAtPrice?: number;
   };
+  contactPhone?: string;
 }) {
   const { locale, dict } = useI18n();
   const t = dict.product;
@@ -138,15 +140,15 @@ export function ProductPurchasePanel({
 
         <div className="mt-5 grid gap-3 sm:grid-cols-2">
           <a
-            href="tel:+8809613821489"
+            href={`tel:${contactPhone}`}
             className="inline-flex items-center justify-center gap-2 rounded-md bg-leaf px-5 py-4 text-sm font-black text-white"
           >
             <Phone size={16} />
-            {t.callNow} +8809613821489
+            {t.callNow} {contactPhone}
           </a>
 
           <a
-            href="https://wa.me/8809613821489"
+            href={`https://wa.me/${contactPhone.replace(/[^0-9]/g, '')}`}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center justify-center rounded-md bg-[#22c55e] px-5 py-4 text-sm font-black text-white"

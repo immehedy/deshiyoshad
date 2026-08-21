@@ -1,12 +1,15 @@
-import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
-import { Header } from '@/components/Header';
-import { Footer } from '@/components/Footer';
-import { FloatingCart } from '@/components/FloatingCart';
-import { isValidLocale, locales } from '@/lib/i18n/config';
-import { getDictionary } from '@/lib/i18n/get-dictionary';
-import { I18nProvider } from '@/lib/i18n/provider';
-import '../globals.css';
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
+import { FloatingCart } from "@/components/FloatingCart";
+import { isValidLocale, locales } from "@/lib/i18n/config";
+import { getDictionary } from "@/lib/i18n/get-dictionary";
+import { I18nProvider } from "@/lib/i18n/provider";
+import { getBrandConfig, getCategories } from "@/lib/contentful/queries";
+import "../globals.css";
+
+export const revalidate = 3600;
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -17,23 +20,39 @@ export async function generateMetadata({
 }: {
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
-  const { locale } = await params;
-  const dict = await getDictionary(isValidLocale(locale) ? locale : 'en');
+  const { locale: rawLocale } = await params;
+  const locale = isValidLocale(rawLocale) ? rawLocale : "en";
 
-  return {
+  const brand = await getBrandConfig(locale);
+
+  const metadata: Metadata = {
     title: {
-      default: dict.metadata.title,
-      template: `%s | ${dict.metadata.brand}`,
+      default: brand.seo.title,
+      template: `%s | ${brand.name}`,
     },
-    description: dict.metadata.description,
-    metadataBase: new URL('https://deshiyoshad.com'),
+    description: brand.seo.description,
+    metadataBase: new URL("https://deshiyoshad.com"),
     alternates: {
       languages: {
-        en: '/en',
-        bn: '/bn',
+        en: "/en",
+        bn: "/bn",
       },
     },
   };
+
+  if (brand.seo.ogImage) {
+    metadata.openGraph = {
+      title: brand.seo.title,
+      description: brand.seo.description,
+      images: [brand.seo.ogImage],
+    };
+  }
+
+  if (brand.faviconUrl) {
+    metadata.icons = { icon: brand.faviconUrl };
+  }
+
+  return metadata;
 }
 
 export default async function RootLayout({
@@ -43,19 +62,28 @@ export default async function RootLayout({
   children: React.ReactNode;
   params: Promise<{ locale: string }>;
 }>) {
-  const { locale } = await params;
+  const { locale: rawLocale } = await params;
 
-  if (!isValidLocale(locale)) notFound();
+  if (!isValidLocale(rawLocale)) notFound();
 
-  const dict = await getDictionary(locale);
+  const [dict, brand, categories] = await Promise.all([
+    getDictionary(rawLocale),
+    getBrandConfig(rawLocale),
+    getCategories(rawLocale),
+  ]);
 
   return (
-    <I18nProvider locale={locale} dict={dict}>
-      <html lang={locale}>
+    <I18nProvider locale={rawLocale} dict={dict}>
+      <html lang={rawLocale}>
         <body>
-          <Header />
+          <Header brand={brand} />
           {children}
-          <Footer dict={dict} locale={locale} />
+          <Footer
+            dict={dict}
+            locale={rawLocale}
+            brand={brand}
+            categories={categories}
+          />
           <FloatingCart />
         </body>
       </html>

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Star } from 'lucide-react';
 import { useI18n } from '@/lib/i18n/provider';
+import type { Review } from '@/lib/types';
 
 type ProductTabsProps = {
   description: string;
@@ -13,6 +14,7 @@ type ProductTabsProps = {
     value: string;
   }[];
   productName: string;
+  reviews?: Review[];
 };
 
 export function ProductTabs({
@@ -21,9 +23,20 @@ export function ProductTabs({
   ingredients,
   nutrition,
   productName,
+  reviews,
 }: ProductTabsProps) {
   const { dict } = useI18n();
   const t = dict.product;
+
+  const resolvedReviews: Review[] =
+    reviews && reviews.length > 0
+      ? reviews
+      : t.reviewList.map((text, index) => ({
+          name: `${t.customer} ${index + 1}`,
+          rating: 5,
+          text,
+          avatarUrl: null,
+        }));
 
   const [tab, setTab] = useState<'description' | 'reviews'>('description');
 
@@ -45,7 +58,7 @@ export function ProductTabs({
             tab === 'reviews' ? 'text-leaf' : 'text-soil/50'
           }`}
         >
-          {t.reviews}
+          {t.reviews.replace('(3)', `(${resolvedReviews.length})`)}
         </button>
       </div>
 
@@ -100,22 +113,24 @@ export function ProductTabs({
           </>
         ) : (
           <div className="grid gap-5 md:grid-cols-3">
-            {t.reviewList.map((review, index) => (
+            {resolvedReviews.map((review, index) => (
               <div
-                key={review}
+                key={`${review.name}-${index}`}
                 className="rounded-2xl border border-soil/10 p-5"
               >
                 <div className="flex gap-1 text-turmeric">
                   {[1, 2, 3, 4, 5].map((star) => (
-                    <Star key={star} size={15} fill="currentColor" />
+                    <Star
+                      key={star}
+                      size={15}
+                      fill={star <= review.rating ? 'currentColor' : 'none'}
+                    />
                   ))}
                 </div>
 
-                <p className="mt-4 text-sm leading-7 text-soil/65">{review}</p>
+                <p className="mt-4 text-sm leading-7 text-soil/65">{review.text}</p>
 
-                <h4 className="mt-4 font-black text-soil">
-                  {t.customer} {index + 1}
-                </h4>
+                <h4 className="mt-4 font-black text-soil">{review.name}</h4>
               </div>
             ))}
           </div>

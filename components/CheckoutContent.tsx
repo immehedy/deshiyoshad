@@ -9,8 +9,10 @@ import { useI18n } from '@/lib/i18n/provider';
 
 export function CheckoutContent({
   productNames,
+  brandName = 'Deshiyoshad',
 }: {
   productNames: Record<string, string>;
+  brandName?: string;
 }) {
   const { locale, dict } = useI18n();
   const t = dict.checkout;
@@ -62,7 +64,7 @@ export function CheckoutContent({
 
   async function sendNtfyNotification() {
     const message = `
-New COD Order - Deshiyoshad
+New COD Order - ${brandName}
 
 Customer: ${customer.name}
 Phone: ${customer.phone}
@@ -88,7 +90,7 @@ ${customer.notes || 'No notes'}
     await fetch('https://ntfy.sh/deshiyoshad-orders', {
       method: 'POST',
       headers: {
-        Title: 'New Deshiyoshad Order',
+        Title: `New ${brandName} Order`,
         Priority: 'high',
         Tags: 'shopping_cart,green_circle',
       },

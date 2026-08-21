@@ -1,6 +1,50 @@
 import { defaultLocale, type Locale } from '@/lib/i18n/config';
+import type { Product } from '@/lib/types';
+
+export type { Product } from '@/lib/types';
 
 export type Localized = Record<Locale, string>;
+
+type CategorySource = {
+  slug: string;
+  title: Localized;
+  description?: Localized;
+};
+
+const categorySources: CategorySource[] = [
+  {
+    slug: 'ghee',
+    title: { en: 'Ghee', bn: 'ঘি' },
+    description: {
+      en: 'Slow-cooked pure desi ghee.',
+      bn: 'ধীরে রান্না করা খাঁটি দেশি ঘি।',
+    },
+  },
+  {
+    slug: 'honey',
+    title: { en: 'Honey', bn: 'মধু' },
+    description: {
+      en: 'Raw honey from natural sources.',
+      bn: 'প্রাকৃতিক উৎস থেকে কাঁচা মধু।',
+    },
+  },
+  {
+    slug: 'oil',
+    title: { en: 'Oils', bn: 'তেল' },
+    description: {
+      en: 'Cold pressed traditional oils.',
+      bn: 'কোল্ড প্রেসড ঐতিহ্যবাহী তেল।',
+    },
+  },
+  {
+    slug: 'pantry',
+    title: { en: 'Pantry', bn: 'প্যান্ট্রি' },
+    description: {
+      en: 'Everyday organic pantry essentials.',
+      bn: 'প্রতিদিনের অর্গানিক প্যান্ট্রি পণ্য।',
+    },
+  },
+];
 
 type ProductSource = {
   slug: string;
@@ -11,7 +55,7 @@ type ProductSource = {
   compareAtPrice?: number;
   weight: string;
   badge: Localized;
-  category: Localized;
+  categorySlug: string;
   image: string;
   images?: string[];
   benefits: Localized[];
@@ -19,30 +63,10 @@ type ProductSource = {
   nutrition: { label: Localized; value: string }[];
 };
 
-export type Product = {
-  slug: string;
-  name: string;
-  shortDescription: string;
-  description: string;
-  price: number;
-  compareAtPrice?: number;
-  weight: string;
-  badge: string;
-  category: string;
-  image: string;
-  images?: string[];
-  benefits: string[];
-  ingredients: string[];
-  nutrition: { label: string; value: string }[];
-};
-
 const productSources: ProductSource[] = [
   {
     slug: 'deshi-ghee',
-    name: {
-      en: 'Pure Deshi Ghee',
-      bn: 'খাঁটি দেশি ঘি',
-    },
+    name: { en: 'Pure Deshi Ghee', bn: 'খাঁটি দেশি ঘি' },
     shortDescription: {
       en: 'Slow-cooked aromatic ghee made from quality dairy cream.',
       bn: 'উন্নত মানের দুধের সর থেকে ধীরে রান্না করা সুগন্ধি ঘি।',
@@ -54,14 +78,8 @@ const productSources: ProductSource[] = [
     price: 890,
     compareAtPrice: 990,
     weight: '500g',
-    badge: {
-      en: 'Best Seller',
-      bn: 'বেস্ট সেলার',
-    },
-    category: {
-      en: 'Dairy',
-      bn: 'দুগ্ধজাত',
-    },
+    badge: { en: 'Best Seller', bn: 'বেস্ট সেলার' },
+    categorySlug: 'ghee',
     image:
       'https://images.unsplash.com/photo-1628088062854-d1870b4553da?q=80&w=1200&auto=format&fit=crop',
     images: [
@@ -71,50 +89,21 @@ const productSources: ProductSource[] = [
       'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?q=80&w=1200&auto=format&fit=crop',
     ],
     benefits: [
-      {
-        en: 'Small-batch prepared',
-        bn: 'ছোট ব্যাচে প্রস্তুত',
-      },
-      {
-        en: 'Rich traditional aroma',
-        bn: 'ঐতিহ্যবাহী সুগন্ধ',
-      },
-      {
-        en: 'No artificial flavor',
-        bn: 'কোনো কৃত্রিম স্বাদ নেই',
-      },
-      {
-        en: 'Great for Bangladeshi cooking',
-        bn: 'বাংলাদেশি রান্নার জন্য উপযুক্ত',
-      },
+      { en: 'Small-batch prepared', bn: 'ছোট ব্যাচে প্রস্তুত' },
+      { en: 'Rich traditional aroma', bn: 'ঐতিহ্যবাহী সুগন্ধ' },
+      { en: 'No artificial flavor', bn: 'কোনো কৃত্রিম স্বাদ নেই' },
+      { en: 'Great for Bangladeshi cooking', bn: 'বাংলাদেশি রান্নার জন্য উপযুক্ত' },
     ],
-    ingredients: [
-      {
-        en: 'Milk cream',
-        bn: 'দুধের সর',
-      },
-    ],
+    ingredients: [{ en: 'Milk cream', bn: 'দুধের সর' }],
     nutrition: [
-      {
-        label: { en: 'Energy', bn: 'শক্তি' },
-        value: '898 kcal / 100g',
-      },
-      {
-        label: { en: 'Fat', bn: 'চর্বি' },
-        value: '99.8g',
-      },
-      {
-        label: { en: 'Protein', bn: 'প্রোটিন' },
-        value: '0.1g',
-      },
+      { label: { en: 'Energy', bn: 'শক্তি' }, value: '898 kcal / 100g' },
+      { label: { en: 'Fat', bn: 'চর্বি' }, value: '99.8g' },
+      { label: { en: 'Protein', bn: 'প্রোটিন' }, value: '0.1g' },
     ],
   },
   {
     slug: 'organic-honey',
-    name: {
-      en: 'Organic Forest Honey',
-      bn: 'অর্গানিক বন মধু',
-    },
+    name: { en: 'Organic Forest Honey', bn: 'অর্গানিক বন মধু' },
     shortDescription: {
       en: 'Raw honey collected from natural forest sources.',
       bn: 'প্রাকৃতিক বন থেকে সংগ্রহ করা কাঁচা মধু।',
@@ -125,14 +114,8 @@ const productSources: ProductSource[] = [
     },
     price: 620,
     weight: '400g',
-    badge: {
-      en: 'Raw',
-      bn: 'কাঁচা',
-    },
-    category: {
-      en: 'Pantry',
-      bn: 'প্যান্ট্রি',
-    },
+    badge: { en: 'Raw', bn: 'কাঁচা' },
+    categorySlug: 'honey',
     image:
       'https://images.unsplash.com/photo-1587049352851-8d4e89133924?q=80&w=1200&auto=format&fit=crop',
     images: [
@@ -142,50 +125,21 @@ const productSources: ProductSource[] = [
       'https://images.unsplash.com/photo-1577048982768-5cb3e7ddfa23?q=80&w=1200&auto=format&fit=crop',
     ],
     benefits: [
-      {
-        en: 'Naturally collected',
-        bn: 'প্রাকৃতিকভাবে সংগ্রহ করা',
-      },
-      {
-        en: 'No added sugar',
-        bn: 'কোনো চিনি মেশানো নেই',
-      },
-      {
-        en: 'Smooth floral taste',
-        bn: 'মসৃণ ফুলেল স্বাদ',
-      },
-      {
-        en: 'Daily pantry essential',
-        bn: 'দৈনন্দিন অপরিহার্য পণ্য',
-      },
+      { en: 'Naturally collected', bn: 'প্রাকৃতিকভাবে সংগ্রহ করা' },
+      { en: 'No added sugar', bn: 'কোনো চিনি মেশানো নেই' },
+      { en: 'Smooth floral taste', bn: 'মসৃণ ফুলেল স্বাদ' },
+      { en: 'Daily pantry essential', bn: 'দৈনন্দিন অপরিহার্য পণ্য' },
     ],
-    ingredients: [
-      {
-        en: 'Raw honey',
-        bn: 'কাঁচা মধু',
-      },
-    ],
+    ingredients: [{ en: 'Raw honey', bn: 'কাঁচা মধু' }],
     nutrition: [
-      {
-        label: { en: 'Energy', bn: 'শক্তি' },
-        value: '304 kcal / 100g',
-      },
-      {
-        label: { en: 'Carbs', bn: 'কার্বোহাইড্রেট' },
-        value: '82g',
-      },
-      {
-        label: { en: 'Sugar', bn: 'চিনি' },
-        value: 'Natural / প্রাকৃতিক',
-      },
+      { label: { en: 'Energy', bn: 'শক্তি' }, value: '304 kcal / 100g' },
+      { label: { en: 'Carbs', bn: 'কার্বোহাইড্রেট' }, value: '82g' },
+      { label: { en: 'Sugar', bn: 'চিনি' }, value: 'Natural / প্রাকৃতিক' },
     ],
   },
   {
     slug: 'black-seed-oil',
-    name: {
-      en: 'Cold Pressed Black Seed Oil',
-      bn: 'কোল্ড প্রেসড কালোজিরা তেল',
-    },
+    name: { en: 'Cold Pressed Black Seed Oil', bn: 'কোল্ড প্রেসড কালোজিরা তেল' },
     shortDescription: {
       en: 'Strong, earthy kalojira oil for traditional wellness use.',
       bn: 'ঐতিহ্যবাহী সুস্থতার জন্য শক্তিশালী কালোজিরা তেল।',
@@ -196,14 +150,8 @@ const productSources: ProductSource[] = [
     },
     price: 540,
     weight: '250ml',
-    badge: {
-      en: 'Cold Pressed',
-      bn: 'কোল্ড প্রেসড',
-    },
-    category: {
-      en: 'Oil',
-      bn: 'তেল',
-    },
+    badge: { en: 'Cold Pressed', bn: 'কোল্ড প্রেসড' },
+    categorySlug: 'oil',
     image:
       'https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?q=80&w=1200&auto=format&fit=crop',
     images: [
@@ -213,50 +161,21 @@ const productSources: ProductSource[] = [
       'https://images.unsplash.com/photo-1505576399279-565b52d4ac71?q=80&w=1200&auto=format&fit=crop',
     ],
     benefits: [
-      {
-        en: 'Cold pressed',
-        bn: 'কোল্ড প্রেসড',
-      },
-      {
-        en: 'Strong authentic taste',
-        bn: 'শক্তিশালী খাঁটি স্বাদ',
-      },
-      {
-        en: 'Traditional wellness item',
-        bn: 'ঐতিহ্যবাহী সুস্থতা সামগ্রী',
-      },
-      {
-        en: 'No added color',
-        bn: 'কোনো রং মেশানো নেই',
-      },
+      { en: 'Cold pressed', bn: 'কোল্ড প্রেসড' },
+      { en: 'Strong authentic taste', bn: 'শক্তিশালী খাঁটি স্বাদ' },
+      { en: 'Traditional wellness item', bn: 'ঐতিহ্যবাহী সুস্থতা সামগ্রী' },
+      { en: 'No added color', bn: 'কোনো রং মেশানো নেই' },
     ],
-    ingredients: [
-      {
-        en: 'Black seed oil',
-        bn: 'কালোজিরা তেল',
-      },
-    ],
+    ingredients: [{ en: 'Black seed oil', bn: 'কালোজিরা তেল' }],
     nutrition: [
-      {
-        label: { en: 'Energy', bn: 'শক্তি' },
-        value: '884 kcal / 100ml',
-      },
-      {
-        label: { en: 'Fat', bn: 'চর্বি' },
-        value: '100g',
-      },
-      {
-        label: { en: 'Additives', bn: 'অ্যাডিটিভ' },
-        value: 'None',
-      },
+      { label: { en: 'Energy', bn: 'শক্তি' }, value: '884 kcal / 100ml' },
+      { label: { en: 'Fat', bn: 'চর্বি' }, value: '100g' },
+      { label: { en: 'Additives', bn: 'অ্যাডিটিভ' }, value: 'None' },
     ],
   },
   {
     slug: 'date-molasses',
-    name: {
-      en: 'Natural Date Molasses',
-      bn: 'প্রাকৃতিক খেজুরের গুড়',
-    },
+    name: { en: 'Natural Date Molasses', bn: 'প্রাকৃতিক খেজুরের গুড়' },
     shortDescription: {
       en: 'Thick date syrup for desserts, milk, roti and breakfast.',
       bn: 'ডেজার্ট, দুধ, রুটি ও নাস্তার জন্য ঘন খেজুরের সিরা।',
@@ -267,14 +186,8 @@ const productSources: ProductSource[] = [
     },
     price: 480,
     weight: '450g',
-    badge: {
-      en: 'Natural Sweetener',
-      bn: 'প্রাকৃতিক মিষ্টি',
-    },
-    category: {
-      en: 'Pantry',
-      bn: 'প্যান্ট্রি',
-    },
+    badge: { en: 'Natural Sweetener', bn: 'প্রাকৃতিক মিষ্টি' },
+    categorySlug: 'pantry',
     image:
       'https://images.unsplash.com/photo-1615485500704-8e990f9900f7?q=80&w=1200&auto=format&fit=crop',
     images: [
@@ -284,85 +197,77 @@ const productSources: ProductSource[] = [
       'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?q=80&w=1200&auto=format&fit=crop',
     ],
     benefits: [
-      {
-        en: 'Naturally sweet',
-        bn: 'প্রাকৃতিকভাবে মিষ্টি',
-      },
-      {
-        en: 'Deep caramel notes',
-        bn: 'গভীর ক্যারামেল স্বাদ',
-      },
-      {
-        en: 'Great for desserts',
-        bn: 'ডেজার্টের জন্য দুর্দান্ত',
-      },
-      {
-        en: 'No refined sugar added',
-        bn: 'কোনো পরিশোধিত চিনি নেই',
-      },
+      { en: 'Naturally sweet', bn: 'প্রাকৃতিকভাবে মিষ্টি' },
+      { en: 'Deep caramel notes', bn: 'গভীর ক্যারামেল স্বাদ' },
+      { en: 'Great for desserts', bn: 'ডেজার্টের জন্য দুর্দান্ত' },
+      { en: 'No refined sugar added', bn: 'কোনো পরিশোধিত চিনি নেই' },
     ],
-    ingredients: [
-      {
-        en: 'Dates',
-        bn: 'খেজুর',
-      },
-    ],
+    ingredients: [{ en: 'Dates', bn: 'খেজুর' }],
     nutrition: [
-      {
-        label: { en: 'Energy', bn: 'শক্তি' },
-        value: '290 kcal / 100g',
-      },
-      {
-        label: { en: 'Carbs', bn: 'কার্বোহাইড্রেট' },
-        value: '75g',
-      },
-      {
-        label: { en: 'Fiber', bn: 'ফাইবার' },
-        value: '2g',
-      },
+      { label: { en: 'Energy', bn: 'শক্তি' }, value: '290 kcal / 100g' },
+      { label: { en: 'Carbs', bn: 'কার্বোহাইড্রেট' }, value: '75g' },
+      { label: { en: 'Fiber', bn: 'ফাইবার' }, value: '2g' },
     ],
   },
 ];
 
-function localize(source: ProductSource, locale: Locale): Product {
+function pick(value: Localized | undefined, locale: Locale): string {
+  return value?.[locale] ?? value?.[defaultLocale] ?? '';
+}
+
+export function getStaticCategories(locale: Locale) {
+  return categorySources.map((source) => ({
+    slug: source.slug,
+    title: pick(source.title, locale),
+    description: source.description ? pick(source.description, locale) : null,
+    imageUrl: null,
+  }));
+}
+
+function localizeProduct(source: ProductSource, locale: Locale): Product {
+  const category = categorySources.find(
+    (item) => item.slug === source.categorySlug
+  );
+
   return {
     slug: source.slug,
-    name: source.name[locale] ?? source.name[defaultLocale],
-    shortDescription:
-      source.shortDescription[locale] ?? source.shortDescription[defaultLocale],
-    description:
-      source.description[locale] ?? source.description[defaultLocale],
+    name: pick(source.name, locale),
+    shortDescription: pick(source.shortDescription, locale),
+    description: pick(source.description, locale),
     price: source.price,
     compareAtPrice: source.compareAtPrice,
     weight: source.weight,
-    badge: source.badge[locale] ?? source.badge[defaultLocale],
-    category: source.category[locale] ?? source.category[defaultLocale],
+    badge: pick(source.badge, locale),
+    category: category ? pick(category.title, locale) : source.categorySlug,
+    categorySlug: source.categorySlug,
     image: source.image,
     images: source.images,
-    benefits: source.benefits.map(
-      (benefit) => benefit[locale] ?? benefit[defaultLocale]
-    ),
-    ingredients: source.ingredients.map(
-      (ingredient) => ingredient[locale] ?? ingredient[defaultLocale]
-    ),
+    benefits: source.benefits.map((benefit) => pick(benefit, locale)),
+    ingredients: source.ingredients.map((ingredient) => pick(ingredient, locale)),
     nutrition: source.nutrition.map((row) => ({
-      label: row.label[locale] ?? row.label[defaultLocale],
+      label: pick(row.label, locale),
       value: row.value,
     })),
   };
 }
 
-export const revalidate = 3600;
-
-export async function getProducts(locale: Locale = defaultLocale) {
-  return productSources.map((source) => localize(source, locale));
+export function getStaticProducts(locale: Locale): Product[] {
+  return productSources.map((source) => localizeProduct(source, locale));
 }
 
-export async function getProductBySlug(
+export function getStaticProductBySlug(
   slug: string,
-  locale: Locale = defaultLocale
-) {
+  locale: Locale
+): Product | null {
   const source = productSources.find((product) => product.slug === slug);
 
-  return source ? localize(source, locale) : null;
+  return source ? localizeProduct(source, locale) : null;
+}
+
+export function getStaticProductSlugs(): string[] {
+  return productSources.map((product) => product.slug);
+}
+
+export function getStaticCategorySlugs(): string[] {
+  return categorySources.map((category) => category.slug);
 }

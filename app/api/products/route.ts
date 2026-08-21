@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getProducts } from '@/lib/products';
+import { getProducts } from '@/lib/contentful/queries';
 import { isValidLocale } from '@/lib/i18n/config';
 
 export const revalidate = 3600;

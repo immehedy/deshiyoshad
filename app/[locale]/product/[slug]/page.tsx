@@ -6,17 +6,23 @@ import { ProductCard } from '@/components/ProductCard';
 import { ProductGallery } from '@/components/ProductGallery';
 import { ProductPurchasePanel } from '@/components/ProductPurchasePanel';
 import { ProductTabs } from '@/components/ProductTabs';
-import { getProductBySlug, getProducts } from '@/lib/products';
+import {
+  getBrandConfig,
+  getProductBySlug,
+  getProducts,
+  getReviews,
+} from '@/lib/contentful/queries';
 import { isValidLocale, locales, type Locale } from '@/lib/i18n/config';
 import { getDictionary } from '@/lib/i18n/get-dictionary';
+import { getStaticProductSlugs } from '@/lib/products';
 
 export const revalidate = 3600;
 
 export async function generateStaticParams() {
-  const products = await getProducts('en');
+  const slugs = getStaticProductSlugs();
 
   return locales.flatMap((locale) =>
-    products.map((product) => ({ locale, slug: product.slug }))
+    slugs.map((slug) => ({ locale, slug }))
   );
 }
 
@@ -47,7 +53,7 @@ export async function generateMetadata({
     openGraph: {
       title: product.name,
       description: product.shortDescription,
-      images: [product.image],
+      images: product.image ? [product.image] : undefined,
     },
   };
 }
@@ -63,15 +69,24 @@ export default async function ProductPage({
 
   const t = dict.product;
 
-  const allProducts = await getProducts(locale);
+  const [allProducts, reviews, brand] = await Promise.all([
+    getProducts(locale),
+    getReviews(locale, product.slug),
+    getBrandConfig(locale),
+  ]);
 
   const relatedProducts = allProducts
     .filter((item) => item.slug !== product.slug)
     .slice(0, 4);
 
   const alsoLikeProducts = allProducts
-    .filter((item) => item.slug !== product.slug)
+    .filter(
+      (item) =>
+        item.slug !== product.slug && item.categorySlug === product.categorySlug
+    )
     .slice(0, 4);
+
+  const fallbackAlsoLike = alsoLikeProducts.length > 0 ? alsoLikeProducts : relatedProducts;
 
   const productOptions = [
     {
@@ -96,7 +111,7 @@ export default async function ProductPage({
     image: product.image,
     brand: {
       '@type': 'Brand',
-      name: 'Deshiyoshad',
+      name: brand.name,
     },
     offers: {
       '@type': 'Offer',
@@ -166,6 +181,7 @@ export default async function ProductPage({
                 weight: product.weight,
                 options: productOptions,
               }}
+              contactPhone={brand.phone}
             />
 
             <div className="mt-4 border-t border-soil/10 pt-4 text-xs text-soil/60">
@@ -204,6 +220,7 @@ export default async function ProductPage({
           benefits={product.benefits}
           ingredients={product.ingredients}
           nutrition={product.nutrition}
+          reviews={reviews}
         />
       </section>
 
@@ -215,7 +232,12 @@ export default async function ProductPage({
 
         <div className="mt-5 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
           {relatedProducts.map((item) => (
-            <ProductCard key={item.slug} product={item} dict={dict} locale={locale} />
+            <ProductCard
+              key={item.slug}
+              product={item}
+              dict={dict}
+              locale={locale}
+            />
           ))}
         </div>
       </section>
@@ -227,8 +249,13 @@ export default async function ProductPage({
         </h2>
 
         <div className="mt-5 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-          {alsoLikeProducts.map((item) => (
-            <ProductCard key={item.slug} product={item} dict={dict} locale={locale} />
+          {fallbackAlsoLike.map((item) => (
+            <ProductCard
+              key={item.slug}
+              product={item}
+              dict={dict}
+              locale={locale}
+            />
           ))}
         </div>
       </section>

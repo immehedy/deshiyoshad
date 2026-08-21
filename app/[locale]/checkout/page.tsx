@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { CheckoutContent } from '@/components/CheckoutContent';
 import { isValidLocale } from '@/lib/i18n/config';
 import { getDictionary } from '@/lib/i18n/get-dictionary';
-import { getProducts } from '@/lib/products';
+import { getBrandConfig, getProducts } from '@/lib/contentful/queries';
 
 export async function generateMetadata({
   params,
@@ -23,11 +23,14 @@ export default async function CheckoutPage({
   const { locale: rawLocale } = await params;
   const locale = isValidLocale(rawLocale) ? rawLocale : 'en';
 
-  const products = await getProducts(locale);
+  const [products, brand] = await Promise.all([
+    getProducts(locale),
+    getBrandConfig(locale),
+  ]);
 
   const productNames = Object.fromEntries(
     products.map((product) => [product.slug, product.name])
   );
 
-  return <CheckoutContent productNames={productNames} />;
+  return <CheckoutContent productNames={productNames} brandName={brand.name} />;
 }
