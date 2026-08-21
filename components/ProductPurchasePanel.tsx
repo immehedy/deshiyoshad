@@ -12,6 +12,7 @@ import {
   Youtube,
 } from 'lucide-react';
 import { addToCart, type CartProduct } from '@/lib/cart-store';
+import { useI18n } from '@/lib/i18n/provider';
 
 type ProductOption = {
   label: string;
@@ -27,9 +28,18 @@ export function ProductPurchasePanel({
     compareAtPrice?: number;
   };
 }) {
+  const { locale, dict } = useI18n();
+  const t = dict.product;
+
   const options = product.options?.length
     ? product.options
-    : [{ label: product.weight, price: product.price, compareAtPrice: product.compareAtPrice }];
+    : [
+        {
+          label: product.weight,
+          price: product.price,
+          compareAtPrice: product.compareAtPrice,
+        },
+      ];
 
   const [selectedOption, setSelectedOption] = useState(options[0]);
   const [quantity, setQuantity] = useState(1);
@@ -51,7 +61,7 @@ export function ProductPurchasePanel({
       addToCart(selectedProduct);
     }
 
-    window.location.href = '/checkout';
+    window.location.href = `/${locale}/checkout`;
   }
 
   return (
@@ -69,7 +79,7 @@ export function ProductPurchasePanel({
       </div>
 
       <div className="mt-7">
-        <p className="mb-3 text-sm font-bold text-soil">Select Option:</p>
+        <p className="mb-3 text-sm font-bold text-soil">{t.selectOption}</p>
 
         <div className="flex flex-wrap gap-3">
           {options.map((option) => (
@@ -115,14 +125,14 @@ export function ProductPurchasePanel({
             className="inline-flex items-center justify-center gap-2 rounded-md bg-leaf px-8 py-3 font-black uppercase text-white"
           >
             <ShoppingCart size={18} />
-            Add to Cart
+            {t.addToCart}
           </button>
 
           <button
             onClick={handleBuyNow}
             className="rounded-md bg-soil px-8 py-3 font-black uppercase text-white"
           >
-            Buy Now
+            {t.buyNow}
           </button>
         </div>
 
@@ -132,7 +142,7 @@ export function ProductPurchasePanel({
             className="inline-flex items-center justify-center gap-2 rounded-md bg-leaf px-5 py-4 text-sm font-black text-white"
           >
             <Phone size={16} />
-            Call Now: +8809613821489
+            {t.callNow} +8809613821489
           </a>
 
           <a
@@ -141,23 +151,35 @@ export function ProductPurchasePanel({
             rel="noopener noreferrer"
             className="inline-flex items-center justify-center rounded-md bg-[#22c55e] px-5 py-4 text-sm font-black text-white"
           >
-            WhatsApp Us
+            {t.whatsappUs}
           </a>
         </div>
       </div>
 
       <div className="mt-6 flex items-center gap-3 border-t border-soil/10 pt-6">
-        <span className="font-bold text-soil">Share:</span>
+        <span className="font-bold text-soil">{t.share}</span>
 
-        <Link href="https://facebook.com" target="_blank" className="grid h-9 w-9 place-items-center rounded-full border border-soil/10 text-soil/60">
+        <Link
+          href="https://facebook.com"
+          target="_blank"
+          className="grid h-9 w-9 place-items-center rounded-full border border-soil/10 text-soil/60"
+        >
           <Facebook size={16} />
         </Link>
 
-        <Link href="https://instagram.com" target="_blank" className="grid h-9 w-9 place-items-center rounded-full border border-soil/10 text-soil/60">
+        <Link
+          href="https://instagram.com"
+          target="_blank"
+          className="grid h-9 w-9 place-items-center rounded-full border border-soil/10 text-soil/60"
+        >
           <Instagram size={16} />
         </Link>
 
-        <Link href="https://youtube.com" target="_blank" className="grid h-9 w-9 place-items-center rounded-full border border-soil/10 text-soil/60">
+        <Link
+          href="https://youtube.com"
+          target="_blank"
+          className="grid h-9 w-9 place-items-center rounded-full border border-soil/10 text-soil/60"
+        >
           <Youtube size={16} />
         </Link>
       </div>

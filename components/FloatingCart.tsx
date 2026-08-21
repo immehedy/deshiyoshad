@@ -2,10 +2,12 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { ShoppingBag, ShoppingCart } from 'lucide-react';
+import { ShoppingCart } from 'lucide-react';
 import { getCart, type CartItem } from '@/lib/cart-store';
+import { useI18n } from '@/lib/i18n/provider';
 
 export function FloatingCart() {
+  const { locale, dict } = useI18n();
   const [count, setCount] = useState(0);
   const [total, setTotal] = useState(0);
 
@@ -34,12 +36,14 @@ export function FloatingCart() {
     <>
       {/* Desktop */}
       <Link
-        href="/cart"
+        href={`/${locale}/cart`}
         className="fixed right-4 top-1/2 z-[80] hidden -translate-y-1/2 overflow-hidden rounded-2xl bg-leaf text-white shadow-2xl transition hover:-translate-y-[52%] md:block"
       >
         <div className="flex flex-col items-center gap-1 px-4 py-4">
           <ShoppingCart size={24} />
-          <span className="text-xs font-black">{count} items</span>
+          <span className="text-xs font-black">
+            {count} {dict.floatingCart.items}
+          </span>
         </div>
 
         <div className="bg-white px-4 py-2 text-center text-sm font-black text-leaf">
@@ -49,7 +53,7 @@ export function FloatingCart() {
 
       {/* Mobile */}
       <Link
-        href="/cart"
+        href={`/${locale}/cart`}
         className="fixed bottom-4 left-4 right-4 z-[80] flex items-center justify-between rounded-full bg-leaf px-5 py-3 text-white shadow-2xl md:hidden"
       >
         <span className="flex items-center gap-2 text-sm font-black">
@@ -59,7 +63,7 @@ export function FloatingCart() {
               {count}
             </span>
           </span>
-          View Cart
+          {dict.floatingCart.viewCart}
         </span>
 
         <span className="rounded-full bg-white px-4 py-2 text-sm font-black text-leaf">
