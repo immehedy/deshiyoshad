@@ -47,12 +47,15 @@ export async function generateMetadata({
 
   if (!product) return {};
 
+  const title = product.seo?.title || product.name;
+  const description = product.seo?.description || product.shortDescription;
+
   return {
-    title: product.name,
-    description: product.shortDescription,
+    title,
+    description,
     openGraph: {
-      title: product.name,
-      description: product.shortDescription,
+      title,
+      description,
       images: product.image ? [product.image] : undefined,
     },
   };
@@ -117,7 +120,10 @@ export default async function ProductPage({
       '@type': 'Offer',
       priceCurrency: 'BDT',
       price: product.price,
-      availability: 'https://schema.org/InStock',
+      availability:
+        product.inStock === false
+          ? "https://schema.org/OutOfStock"
+          : "https://schema.org/InStock",
     },
   };
 

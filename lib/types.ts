@@ -55,6 +55,14 @@ export type Product = {
   benefits: string[];
   ingredients: string[];
   nutrition: { label: string; value: string }[];
+  sku?: string;
+  stockQuantity?: number;
+  inStock?: boolean;
+  featured?: boolean;
+  seo?: {
+    title: string;
+    description: string;
+  };
 };
 
 export type Review = {

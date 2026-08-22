@@ -73,33 +73,101 @@ type CategoryFields = {
 };
 
 type ProductFields = {
-  name?: string;
-  nameBn?: string;
-  slug?: string;
+  productName?: string;
+  productSlug?: string;
+  sku?: string;
   shortDescription?: string;
-  shortDescriptionBn?: string;
-  description?: string;
-  descriptionBn?: string;
+  detailedDescription?: RichTextNode;
   price?: number;
-  compareAtPrice?: number;
-  weight?: string;
+  discountedPrice?: number;
+  weightSize?: string;
+  stockQuantity?: number;
+  inStockStatus?: boolean;
   badge?: string;
   category?: unknown;
-  images?: unknown[];
-  benefits?: string[];
-  ingredients?: string[];
-  nutrition?: string[];
-  featured?: boolean;
+  productImages?: unknown[];
+  benefits?: RichTextNode;
+  ingredients?: RichTextNode;
+  nutrition?: RichTextNode;
+  featuredProductFlag?: boolean;
+  metaTitle?: unknown;
+  metaDescription?: unknown;
   sortOrder?: number;
+};
+
+type RichTextNode = {
+  value?: string;
+  content?: RichTextNode[];
+  nodeType?: string;
 };
 
 type ReviewFields = {
   reviewerName?: string;
   rating?: number;
+  reviewText?: RichTextNode;
+  reviewerImage?: unknown;
   text?: string;
   avatar?: unknown;
   product?: unknown;
 };
+
+function richTextToPlainText(node: RichTextNode | undefined): string {
+  if (!node) return "";
+
+  const own = typeof node.value === "string" ? node.value : "";
+  const childText = (node.content ?? [])
+    .map((child) => richTextToPlainText(child))
+    .filter(Boolean)
+    .join(" ");
+
+  return [own, childText].filter(Boolean).join(" ").trim();
+}
+
+function collectListItems(
+  node: RichTextNode,
+  items: string[]
+): void {
+  for (const child of node.content ?? []) {
+    if (child.nodeType === "list-item") {
+      const text = richTextToPlainText(child);
+
+      if (text) items.push(text);
+    } else if (
+      child.nodeType === "ordered-list" ||
+      child.nodeType === "unordered-list"
+    ) {
+      collectListItems(child, items);
+    }
+  }
+}
+
+function richTextToListItems(node: RichTextNode | undefined): string[] {
+  if (!node) return [];
+
+  const listItems: string[] = [];
+
+  collectListItems(node, listItems);
+
+  if (listItems.length > 0) return listItems;
+
+  return (node.content ?? [])
+    .filter((child) => child.nodeType === "paragraph")
+    .map((child) => richTextToPlainText(child))
+    .filter(Boolean);
+}
+
+function metaText(value: unknown): string {
+  if (typeof value === "string") return value.trim();
+
+  if (value && typeof value === "object") {
+    const record = value as Record<string, unknown>;
+    const candidate = record.value ?? record.title ?? record.text;
+
+    if (typeof candidate === "string") return candidate.trim();
+  }
+
+  return "";
+}
 
 type VideoAlbumFields = {
   title?: string;
@@ -147,15 +215,15 @@ function localizedText(
   base: string,
   locale: Locale
 ): string | undefined {
-  if (locale === 'bn') {
+  if (locale === "bn") {
     const bn = fields[`${base}Bn`];
 
-    if (typeof bn === 'string' && bn.trim()) return bn;
+    if (typeof bn === "string" && bn.trim()) return bn;
   }
 
   const value = fields[base];
 
-  return typeof value === 'string' && value.trim() ? value : undefined;
+  return typeof value === "string" && value.trim() ? value : undefined;
 }
 
 function withLocale(href: string, locale: Locale): string {
@@ -442,7 +510,8 @@ export async function getHeroBanners(locale: Locale): Promise<{
         ctaLabel: promo.ctaLabel,
         ctaHref: promo.ctaHref,
         imageUrl:
-          promo.imageUrl || fallback.promos[index % fallback.promos.length].imageUrl,
+          promo.imageUrl ||
+          fallback.promos[index % fallback.promos.length].imageUrl,
       }));
 
       return { main, promos };
@@ -485,14 +554,14 @@ function mapProductEntry(
 ): Product | null {
   const fields = entry.fields;
 
-  const name = localizedText(fields, "name", locale);
+  const name = fields.productName?.trim();
 
-  if (!fields.slug || !name) return null;
+  if (!fields.productSlug || !name) return null;
 
   const categoryEntry = resolveEntry<CategoryFields>(includes, fields.category);
 
   const imageLinks = (
-    Array.isArray(fields.images) ? fields.images : []
+    Array.isArray(fields.productImages) ? fields.productImages : []
   ) as unknown[];
 
   const images = imageLinks
@@ -501,7 +570,7 @@ function mapProductEntry(
 
   const cover = images[0] ?? "";
 
-  const description = localizedText(fields, "description", locale) ?? "";
+  const description = richTextToPlainText(fields.detailedDescription);
 
   const categoryTitle =
     localizedText(categoryEntry?.fields ?? {}, "name", locale) ??
@@ -509,23 +578,36 @@ function mapProductEntry(
     categoryEntry?.fields.slug ??
     "";
 
+  const seoTitle = metaText(fields.metaTitle);
+  const seoDescription = metaText(fields.metaDescription);
+
   return {
-    slug: fields.slug,
+    slug: fields.productSlug,
     name,
-    shortDescription:
-      localizedText(fields, "shortDescription", locale) ?? description,
+    shortDescription: fields.shortDescription ?? description,
     description,
-    price: fields.price ?? 0,
-    compareAtPrice: fields.compareAtPrice,
-    weight: fields.weight ?? "",
+    price: fields.discountedPrice ?? fields.price ?? 0,
+    compareAtPrice:
+      fields.discountedPrice != null && fields.price != null
+        ? fields.price
+        : undefined,
+    weight: fields.weightSize ?? "",
     badge: fields.badge ?? "",
     category: categoryTitle,
     categorySlug: categoryEntry?.fields.slug ?? "",
     image: cover,
     images: images.length > 0 ? images : cover ? [cover] : [],
-    benefits: fields.benefits ?? [],
-    ingredients: fields.ingredients ?? [],
-    nutrition: (fields.nutrition ?? []).map(parseNutrition),
+    benefits: richTextToListItems(fields.benefits),
+    ingredients: richTextToListItems(fields.ingredients),
+    nutrition: richTextToListItems(fields.nutrition).map(parseNutrition),
+    sku: fields.sku ?? "",
+    stockQuantity: fields.stockQuantity ?? 0,
+    inStock: fields.inStockStatus ?? true,
+    featured: fields.featuredProductFlag ?? false,
+    seo:
+      seoTitle || seoDescription
+        ? { title: seoTitle, description: seoDescription }
+        : undefined,
   };
 }
 
@@ -560,7 +642,7 @@ export async function getProductBySlug(
       const { items, includes } = await fetchEntries<ProductFields>(
         "product",
         getContentfulLocale(locale),
-        { "fields.slug": slug, limit: 1 }
+        { "fields.productSlug": slug, limit: 1 }
       );
 
       if (items.length === 0) return null;
@@ -576,8 +658,9 @@ export async function getFeaturedProducts(
   limit = 8
 ): Promise<Product[]> {
   const products = await getProducts(locale);
+  const featured = products.filter((product) => product.featured);
 
-  return products.slice(0, limit);
+  return (featured.length > 0 ? featured : products).slice(0, limit);
 }
 
 function mapReviewEntry(
@@ -589,8 +672,10 @@ function mapReviewEntry(
   return {
     name: fields.reviewerName ?? "",
     rating: fields.rating ?? 5,
-    text: fields.text ?? "",
-    avatarUrl: assetUrl(resolveAsset(includes, fields.avatar)),
+    text: richTextToPlainText(fields.reviewText) || fields.text || "",
+    avatarUrl:
+      assetUrl(resolveAsset(includes, fields.reviewerImage)) ??
+      assetUrl(resolveAsset(includes, fields.avatar)),
   };
 }
 
@@ -599,7 +684,7 @@ export async function getReviews(
   productSlug?: string
 ): Promise<Review[]> {
   return withFallback(
-    "reviews",
+    "review",
     async () => {
       const query: Record<string, string | number | undefined> = { limit: 12 };
 
@@ -607,7 +692,7 @@ export async function getReviews(
         const products = await fetchEntries<ProductFields>(
           "product",
           getContentfulLocale(locale),
-          { "fields.slug": productSlug, limit: 1 }
+          { "fields.productSlug": productSlug, limit: 1 }
         );
 
         const productId = products.items[0]?.sys.id;

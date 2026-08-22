@@ -1,11 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import {
-  ArrowRight,
-  Play,
-  ShoppingCart,
-  Star,
-} from "lucide-react";
+import { ArrowRight, Play, Quote, ShoppingCart, Star } from "lucide-react";
 import { ProductCard } from "@/components/ProductCard";
 import { isValidLocale } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
@@ -55,16 +50,19 @@ export default async function HomePage({
       <section className="mx-auto max-w-7xl px-3 pt-3 md:px-5 md:pt-4">
         <div
           className={`grid gap-3 md:gap-4 ${
-            hero.promos.length > 0 ? 'lg:grid-cols-[2fr_1fr]' : ''
-          }`}
-        >
+            hero.promos.length > 0 ? "lg:grid-cols-[2fr_1fr]" : ""
+          }`}>
           <div className="relative min-h-[170px] overflow-hidden rounded-xl bg-[#e7f5d7] shadow-soft sm:min-h-[210px] md:min-h-[330px] md:rounded-2xl">
             <Image
               src={hero.main.imageUrl}
-              alt={hero.main.title || 'Hero banner'}
+              alt={hero.main.title || "Hero banner"}
               fill
               priority
-              sizes={hero.promos.length > 0 ? '(max-width: 1024px) 100vw, 66vw' : '100vw'}
+              sizes={
+                hero.promos.length > 0
+                  ? "(max-width: 1024px) 100vw, 66vw"
+                  : "100vw"
+              }
               className="object-cover"
             />
 
@@ -95,7 +93,7 @@ export default async function HomePage({
                     <Link
                       href={hero.main.ctaHref}
                       className="mt-3 inline-flex items-center gap-2 rounded-full bg-leaf px-4 py-2 text-xs font-black text-white shadow-soft md:mt-5 md:px-5 md:py-3 md:text-sm">
-                      {hero.main.ctaLabel}{' '}
+                      {hero.main.ctaLabel}{" "}
                       <ArrowRight size={14} className="md:hidden" />
                       <ArrowRight size={16} className="hidden md:block" />
                     </Link>
@@ -108,34 +106,36 @@ export default async function HomePage({
           {hero.promos.length > 0 ? (
             <div className="grid grid-cols-2 gap-3 md:gap-4 lg:grid-cols-1">
               {hero.promos.map((promo) => (
-              <div
-                key={`${promo.imageUrl}-${promo.title}`}
-                className="relative min-h-[84px] overflow-hidden rounded-xl bg-turmeric/20 shadow-soft sm:min-h-[110px] md:min-h-[157px] md:rounded-2xl">
-                <Image
-                  src={promo.imageUrl}
-                  alt={promo.title || 'Promo banner'}
-                  fill
-                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 50vw, 25vw"
-                  className="object-cover"
-                />
+                <div
+                  key={`${promo.imageUrl}-${promo.title}`}
+                  className="relative min-h-[84px] overflow-hidden rounded-xl bg-turmeric/20 shadow-soft sm:min-h-[110px] md:min-h-[157px] md:rounded-2xl">
+                  <Image
+                    src={promo.imageUrl}
+                    alt={promo.title || "Promo banner"}
+                    fill
+                    sizes="(max-width: 640px) 50vw, (max-width: 1024px) 50vw, 25vw"
+                    className="object-cover"
+                  />
 
-                {promo.tag || promo.title ? (
-                  <>
-                    <div className="absolute inset-0 bg-black/25" />
+                  {promo.tag || promo.title ? (
+                    <>
+                      <div className="absolute inset-0 bg-black/25" />
 
-                    <div className="absolute bottom-2 left-3 p-1 text-white md:bottom-4 md:left-4 md:p-0">
-                      {promo.tag ? (
-                        <p className="text-[9px] font-black md:text-xs">{promo.tag}</p>
-                      ) : null}
-                      {promo.title ? (
-                        <h3 className="line-clamp-1 text-xs font-black sm:text-sm md:line-clamp-none md:text-xl">
-                          {promo.title}
-                        </h3>
-                      ) : null}
-                    </div>
-                  </>
-                ) : null}
-              </div>
+                      <div className="absolute bottom-2 left-3 p-1 text-white md:bottom-4 md:left-4 md:p-0">
+                        {promo.tag ? (
+                          <p className="text-[9px] font-black md:text-xs">
+                            {promo.tag}
+                          </p>
+                        ) : null}
+                        {promo.title ? (
+                          <h3 className="line-clamp-1 text-xs font-black sm:text-sm md:line-clamp-none md:text-xl">
+                            {promo.title}
+                          </h3>
+                        ) : null}
+                      </div>
+                    </>
+                  ) : null}
+                </div>
               ))}
             </div>
           ) : null}
@@ -174,74 +174,11 @@ export default async function HomePage({
         </div>
       </section>
 
-      {/* Blog */}
-      <section className="mx-auto max-w-7xl px-4 pb-10 md:px-5">
-        <div className="mb-6 text-center">
-          <p className="text-xs font-black uppercase tracking-[0.2em] text-leaf">
-            {home.blogTag}
-          </p>
-
-          <h2 className="mt-2 text-2xl font-black text-soil md:text-3xl">
-            {home.blogTitle}
-          </h2>
-        </div>
-
-        <div className="grid gap-4 md:grid-cols-3">
-          {blogPosts.map((post) => (
-            <article
-              key={post.slug || post.title}
-              className="overflow-hidden rounded-2xl bg-white shadow-soft">
-              <div className="relative h-36 bg-[#eef3ef]">
-                {post.imageUrl ? (
-                  <Image
-                    src={post.imageUrl}
-                    alt={post.title}
-                    fill
-                    sizes="(max-width: 768px) 100vw, 33vw"
-                    className="object-cover"
-                  />
-                ) : null}
-
-                {post.date ? (
-                  <div className="absolute left-4 top-4 rounded bg-white px-2 py-1 text-center text-[10px] font-black text-soil shadow">
-                    {post.date.split(" ")[0]}
-                    <br />
-                    {post.date.split(" ")[1]}
-                  </div>
-                ) : null}
-              </div>
-
-              <div className="p-4 text-center">
-                {post.tag ? (
-                  <span className="rounded-full bg-leaf px-3 py-1 text-[10px] font-black uppercase text-white">
-                    {post.tag}
-                  </span>
-                ) : null}
-
-                <h3 className="mt-4 text-base font-black text-soil">
-                  {post.title}
-                </h3>
-
-                <p className="mt-2 text-xs leading-6 text-soil/60">
-                  {post.excerpt}
-                </p>
-
-                <a
-                  href="#"
-                  className="mt-4 inline-flex text-sm font-black text-leaf">
-                  {home.continueReading}
-                </a>
-              </div>
-            </article>
-          ))}
-        </div>
-      </section>
-
       {/* Reviews */}
       {reviews.length > 0 ? (
         <section className="mx-auto max-w-7xl px-4 pb-10 md:px-5">
           <div className="border-y border-leaf/10 py-8">
-            <div className="mb-6 text-center">
+            <div className="mb-8 text-center">
               <p className="text-xs font-black uppercase tracking-[0.2em] text-leaf">
                 {home.reviewsTag}
               </p>
@@ -249,44 +186,96 @@ export default async function HomePage({
               <h2 className="mt-2 text-2xl font-black text-soil md:text-3xl">
                 {home.reviewsTitle}
               </h2>
+
+              <div className="mt-3 flex items-center justify-center gap-2">
+                <span className="flex gap-0.5 text-turmeric">
+                  {Array.from({ length: 5 }).map((_, star) => (
+                    <Star
+                      key={star}
+                      size={14}
+                      fill={
+                        star <
+                        Math.round(
+                          reviews.reduce(
+                            (sum, review) => sum + review.rating,
+                            0
+                          ) / reviews.length
+                        )
+                          ? "currentColor"
+                          : "none"
+                      }
+                    />
+                  ))}
+                </span>
+
+                <span className="text-xs font-bold text-soil/50">
+                  {reviews.length}
+                </span>
+              </div>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-3">
-              {reviews.slice(0, 3).map((review, index) => (
-                <div
-                  key={`${review.name}-${index}`}
-                  className="rounded-2xl bg-white p-5 text-center shadow-soft">
-                  {review.avatarUrl ? (
-                    <Image
-                      src={review.avatarUrl}
-                      alt={review.name}
-                      width={56}
-                      height={56}
-                      className="mx-auto h-14 w-14 rounded-full object-cover"
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {reviews.slice(0, 6).map((review, index) => {
+                const initials = review.name
+                  .split(" ")
+                  .filter(Boolean)
+                  .slice(0, 2)
+                  .map((word) => word[0])
+                  .join("")
+                  .toUpperCase();
+
+                return (
+                  <figure
+                    key={`${review.name}-${index}`}
+                    className="relative flex flex-col rounded-2xl bg-white p-5 pt-8 shadow-soft">
+                    <Quote
+                      size={32}
+                      className="absolute right-4 top-4 text-leaf/15"
+                      fill="currentColor"
+                      strokeWidth={0}
                     />
-                  ) : (
-                    <div className="mx-auto h-14 w-14 rounded-full bg-soil/10" />
-                  )}
 
-                  <div className="mt-4 flex justify-center gap-1 text-turmeric">
-                    {Array.from({ length: 5 }).map((_, star) => (
-                      <Star
-                        key={star}
-                        size={13}
-                        fill={star < review.rating ? "currentColor" : "none"}
-                      />
-                    ))}
-                  </div>
+                    <div className="flex gap-1 text-turmeric">
+                      {Array.from({ length: 5 }).map((_, star) => (
+                        <Star
+                          key={star}
+                          size={13}
+                          fill={star < review.rating ? "currentColor" : "none"}
+                        />
+                      ))}
+                    </div>
 
-                  <p className="mt-3 text-xs leading-6 text-soil/65">
-                    {review.text}
-                  </p>
+                    <blockquote className="mt-3 flex-1 text-xs leading-6 text-soil/65">
+                      {review.text}
+                    </blockquote>
 
-                  <h4 className="mt-3 text-sm font-black text-soil">
-                    {review.name}
-                  </h4>
-                </div>
-              ))}
+                    <figcaption className="mt-5 flex items-center gap-3 border-t border-soil/5 pt-4">
+                      {review.avatarUrl ? (
+                        <Image
+                          src={review.avatarUrl}
+                          alt={review.name}
+                          width={44}
+                          height={44}
+                          className="h-11 w-11 rounded-full object-cover"
+                        />
+                      ) : (
+                        <span className="grid h-11 w-11 place-items-center rounded-full bg-leaf/10 text-xs font-black text-leaf">
+                          {initials || "★"}
+                        </span>
+                      )}
+
+                      <div>
+                        <h4 className="text-sm font-black text-soil">
+                          {review.name}
+                        </h4>
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-leaf">
+                          {home.happyCustomer}
+                        </p>
+                      </div>
+                    </figcaption>
+                  </figure>
+                );
+              })}
             </div>
           </div>
         </section>
