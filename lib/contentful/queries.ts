@@ -47,9 +47,13 @@ type BrandFields = {
   ogImage?: unknown;
 };
 
+type HeroVariantFields = {
+  variantName?: string;
+};
+
 type HeroBannerFields = {
   image?: unknown;
-  variant?: string;
+  variant?: unknown;
   tag?: string;
   title?: string;
   subtitle?: string;
@@ -60,6 +64,8 @@ type HeroBannerFields = {
 
 type CategoryFields = {
   title?: string;
+  name?: string;
+  nameBn?: string;
   slug?: string;
   description?: string;
   image?: unknown;
@@ -68,9 +74,12 @@ type CategoryFields = {
 
 type ProductFields = {
   name?: string;
+  nameBn?: string;
   slug?: string;
   shortDescription?: string;
+  shortDescriptionBn?: string;
   description?: string;
+  descriptionBn?: string;
   price?: number;
   compareAtPrice?: number;
   weight?: string;
@@ -133,6 +142,22 @@ function warn(scope: string, error: unknown) {
   );
 }
 
+function localizedText(
+  fields: Record<string, unknown>,
+  base: string,
+  locale: Locale
+): string | undefined {
+  if (locale === 'bn') {
+    const bn = fields[`${base}Bn`];
+
+    if (typeof bn === 'string' && bn.trim()) return bn;
+  }
+
+  const value = fields[base];
+
+  return typeof value === 'string' && value.trim() ? value : undefined;
+}
+
 function withLocale(href: string, locale: Locale): string {
   if (/^https?:\/\//.test(href)) return href;
   if (href === "/") return `/${locale}`;
@@ -183,15 +208,23 @@ function parseNutrition(row: string): { label: string; value: string } {
 }
 
 async function fetchBrand(locale: Locale) {
-  const { items, includes } = await fetchEntries<BrandFields>(
-    "brand",
+  let result = await fetchEntries<BrandFields>(
+    "brandSettings",
     getContentfulLocale(locale),
     { limit: 1 }
   );
 
-  const entry = items[0];
+  if (result.items.length === 0) {
+    result = await fetchEntries<BrandFields>(
+      "brand",
+      getContentfulLocale(locale),
+      { limit: 1 }
+    );
+  }
 
-  console.log({ entry });
+  const { items, includes } = result;
+
+  const entry = items[0];
 
   if (!entry) return null;
 
@@ -282,6 +315,68 @@ export async function getBrandConfig(locale: Locale): Promise<BrandConfig> {
   );
 }
 
+function buildHeroFallback(locale: Locale): {
+  main: HeroBanner;
+  promos: HeroBanner[];
+} {
+  const home = {
+    en: {
+      heroTag: "Deshiyoshad Organic",
+      heroTitle: "Pure food for the body, safe food for the home",
+      heroSubtitle:
+        "Pure ghee, honey, oil, masala and daily essentials sourced with care for Bangladeshi families.",
+      shopNow: "Shop Now",
+      mustardTag: "Premium Mustard Oil",
+      mustardTitle: "Authentic Taste in Cooking",
+      honeyTag: "Natural Honey",
+      honeyTitle: "Natural Sweetness",
+    },
+    bn: {
+      heroTag: "দেশিয়োষধ অর্গানিক",
+      heroTitle: "শরীরের জন্য খাঁটি, ঘরের জন্য নিরাপদ খাবার",
+      heroSubtitle:
+        "বাংলাদেশি পরিবারের জন্য যত্ন নিয়ে সংগ্রহ করা খাঁটি ঘি, মধু, তেল, মসলা ও নিত্যপ্রয়োজনীয় পণ্য।",
+      shopNow: "এখনই কিনুন",
+      mustardTag: "প্রিমিয়াম সরিষার তেল",
+      mustardTitle: "রান্নায় খাঁটি স্বাদ",
+      honeyTag: "প্রাকৃতিক মধু",
+      honeyTitle: "প্রাকৃতিক মিষ্টতা",
+    },
+  }[locale];
+
+  return {
+    main: {
+      tag: home.heroTag,
+      title: home.heroTitle,
+      subtitle: home.heroSubtitle,
+      ctaLabel: home.shopNow,
+      ctaHref: `/${locale}#products`,
+      imageUrl:
+        "https://images.unsplash.com/photo-1601493700631-2b16ec4b4716?q=80&w=1400&auto=format&fit=crop",
+    },
+    promos: [
+      {
+        tag: home.mustardTag,
+        title: home.mustardTitle,
+        subtitle: "",
+        ctaLabel: "",
+        ctaHref: "",
+        imageUrl:
+          "https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?q=80&w=900&auto=format&fit=crop",
+      },
+      {
+        tag: home.honeyTag,
+        title: home.honeyTitle,
+        subtitle: "",
+        ctaLabel: "",
+        ctaHref: "",
+        imageUrl:
+          "https://images.unsplash.com/photo-1587049352846-4a222e784d38?q=80&w=900&auto=format&fit=crop",
+      },
+    ],
+  };
+}
+
 export async function getHeroBanners(locale: Locale): Promise<{
   main: HeroBanner;
   promos: HeroBanner[];
@@ -296,6 +391,17 @@ export async function getHeroBanners(locale: Locale): Promise<{
 
       if (items.length === 0) return null;
 
+      const resolveVariant = (fields: HeroBannerFields): string => {
+        if (typeof fields.variant === "string") return fields.variant;
+
+        const variantEntry = resolveEntry<HeroVariantFields>(
+          includes,
+          fields.variant
+        );
+
+        return variantEntry?.fields.variantName ?? "main";
+      };
+
       const banners = sortByOrder(items, (item) => item.fields.sortOrder).map(
         (item) => ({
           tag: item.fields.tag ?? "",
@@ -306,79 +412,42 @@ export async function getHeroBanners(locale: Locale): Promise<{
             ? withLocale(item.fields.ctaHref, locale)
             : "",
           imageUrl: assetUrl(resolveAsset(includes, item.fields.image)) ?? "",
-          variant:
-            item.fields.variant === "promo"
-              ? ("promo" as const)
-              : ("main" as const),
+          variant: resolveVariant(item.fields),
         })
       );
 
-      const main = banners.find((banner) => banner.variant === "main");
+      const cmsMain = banners.find((banner) => banner.variant === "main");
 
-      const promos = banners.filter((banner) => banner.variant === "promo");
+      const cmsPromos = banners.filter((banner) => banner.variant === "promo");
 
-      if (!main) return null;
+      if (!cmsMain) return null;
+
+      const fallback = buildHeroFallback(locale);
+
+      const main: HeroBanner = {
+        tag: cmsMain.tag,
+        title: cmsMain.title,
+        subtitle: cmsMain.subtitle,
+        ctaLabel: cmsMain.ctaLabel,
+        ctaHref: cmsMain.ctaHref,
+        imageUrl: cmsMain.imageUrl || fallback.main.imageUrl,
+      };
+
+      const promos: HeroBanner[] = (
+        cmsPromos.length > 0 ? cmsPromos : fallback.promos
+      ).map((promo, index) => ({
+        tag: promo.tag,
+        title: promo.title,
+        subtitle: promo.subtitle,
+        ctaLabel: promo.ctaLabel,
+        ctaHref: promo.ctaHref,
+        imageUrl:
+          promo.imageUrl || fallback.promos[index % fallback.promos.length].imageUrl,
+      }));
 
       return { main, promos };
     },
-    () => {
-      const home = {
-        en: {
-          heroTag: "Deshiyoshad Organic",
-          heroTitle: "Pure food for the body, safe food for the home",
-          heroSubtitle:
-            "Pure ghee, honey, oil, masala and daily essentials sourced with care for Bangladeshi families.",
-          shopNow: "Shop Now",
-          mustardTag: "Premium Mustard Oil",
-          mustardTitle: "Authentic Taste in Cooking",
-          honeyTag: "Natural Honey",
-          honeyTitle: "Natural Sweetness",
-        },
-        bn: {
-          heroTag: "দেশিয়োষধ অর্গানিক",
-          heroTitle: "শরীরের জন্য খাঁটি, ঘরের জন্য নিরাপদ খাবার",
-          heroSubtitle:
-            "বাংলাদেশি পরিবারের জন্য যত্ন নিয়ে সংগ্রহ করা খাঁটি ঘি, মধু, তেল, মসলা ও নিত্যপ্রয়োজনীয় পণ্য।",
-          shopNow: "এখনই কিনুন",
-          mustardTag: "প্রিমিয়াম সরিষার তেল",
-          mustardTitle: "রান্নায় খাঁটি স্বাদ",
-          honeyTag: "প্রাকৃতিক মধু",
-          honeyTitle: "প্রাকৃতিক মিষ্টতা",
-        },
-      }[locale];
-
-      return {
-        main: {
-          tag: home.heroTag,
-          title: home.heroTitle,
-          subtitle: home.heroSubtitle,
-          ctaLabel: home.shopNow,
-          ctaHref: `/${locale}#products`,
-          imageUrl:
-            "https://images.unsplash.com/photo-1601493700631-2b16ec4b4716?q=80&w=1400&auto=format&fit=crop",
-        },
-        promos: [
-          {
-            tag: home.mustardTag,
-            title: home.mustardTitle,
-            subtitle: "",
-            ctaLabel: "",
-            ctaHref: "",
-            imageUrl:
-              "https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?q=80&w=900&auto=format&fit=crop",
-          },
-          {
-            tag: home.honeyTag,
-            title: home.honeyTitle,
-            subtitle: "",
-            ctaLabel: "",
-            ctaHref: "",
-            imageUrl:
-              "https://images.unsplash.com/photo-1587049352846-4a222e784d38?q=80&w=900&auto=format&fit=crop",
-          },
-        ],
-      };
-    }
+    () => buildHeroFallback(locale)
   );
 }
 
@@ -397,7 +466,10 @@ export async function getCategories(locale: Locale): Promise<Category[]> {
         .filter((item) => item.fields.slug)
         .map((item) => ({
           slug: item.fields.slug!,
-          title: item.fields.title ?? item.fields.slug!,
+          title:
+            localizedText(item.fields, "name", locale) ??
+            item.fields.title ??
+            item.fields.slug!,
           description: item.fields.description ?? null,
           imageUrl: assetUrl(resolveAsset(includes, item.fields.image)),
         }));
@@ -408,11 +480,14 @@ export async function getCategories(locale: Locale): Promise<Category[]> {
 
 function mapProductEntry(
   entry: CfEntry<ProductFields>,
-  includes: CfIncludes
+  includes: CfIncludes,
+  locale: Locale
 ): Product | null {
   const fields = entry.fields;
 
-  if (!fields.slug || !fields.name) return null;
+  const name = localizedText(fields, "name", locale);
+
+  if (!fields.slug || !name) return null;
 
   const categoryEntry = resolveEntry<CategoryFields>(includes, fields.category);
 
@@ -426,16 +501,25 @@ function mapProductEntry(
 
   const cover = images[0] ?? "";
 
+  const description = localizedText(fields, "description", locale) ?? "";
+
+  const categoryTitle =
+    localizedText(categoryEntry?.fields ?? {}, "name", locale) ??
+    categoryEntry?.fields.title ??
+    categoryEntry?.fields.slug ??
+    "";
+
   return {
     slug: fields.slug,
-    name: fields.name,
-    shortDescription: fields.shortDescription ?? fields.description ?? "",
-    description: fields.description ?? "",
+    name,
+    shortDescription:
+      localizedText(fields, "shortDescription", locale) ?? description,
+    description,
     price: fields.price ?? 0,
     compareAtPrice: fields.compareAtPrice,
     weight: fields.weight ?? "",
     badge: fields.badge ?? "",
-    category: categoryEntry?.fields.title ?? categoryEntry?.fields.slug ?? "",
+    category: categoryTitle,
     categorySlug: categoryEntry?.fields.slug ?? "",
     image: cover,
     images: images.length > 0 ? images : cover ? [cover] : [],
@@ -457,7 +541,7 @@ export async function getProducts(locale: Locale): Promise<Product[]> {
       if (items.length === 0) return null;
 
       const products = sortByOrder(items, (item) => item.fields.sortOrder)
-        .map((item) => mapProductEntry(item, includes))
+        .map((item) => mapProductEntry(item, includes, locale))
         .filter((product): product is Product => Boolean(product));
 
       return products.length > 0 ? products : null;
@@ -481,7 +565,7 @@ export async function getProductBySlug(
 
       if (items.length === 0) return null;
 
-      return mapProductEntry(items[0], includes);
+      return mapProductEntry(items[0], includes, locale);
     },
     () => getStaticProductBySlug(slug, locale)
   );

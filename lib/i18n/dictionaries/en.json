@@ -7,7 +7,9 @@
   "common": {
     "view": "View",
     "items": "items",
-    "currency": "৳"
+    "currency": "৳",
+    "addToCart": "Add to Cart",
+    "orderNow": "Order Now"
   },
   "header": {
     "topbar": "🌿 100% Organic & Natural Food Products",
@@ -90,6 +92,7 @@
     "weight": "Weight:",
     "remove": "Remove",
     "orderSummary": "Order Summary",
+    "added": "Added",
     "subtotal": "Subtotal",
     "deliveryCharge": "Delivery Charge",
     "total": "Total",

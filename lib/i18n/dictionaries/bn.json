@@ -7,7 +7,9 @@
   "common": {
     "view": "দেখুন",
     "items": "টি পণ্য",
-    "currency": "৳"
+    "currency": "৳",
+    "addToCart": "কার্টে রাখুন",
+    "orderNow": "অর্ডার করুন"
   },
   "header": {
     "topbar": "🌿 ১০০% অর্গানিক ও প্রাকৃতিক খাদ্য পণ্য",
@@ -64,7 +66,7 @@
     "ingredients": "উপাদান",
     "nutritionInfo": "পুষ্টিগুণ তথ্য",
     "selectOption": "অপশন নির্বাচন করুন:",
-    "addToCart": "কার্টে যোগ করুন",
+    "addToCart": "কার্টে রাখুন",
     "buyNow": "এখনই কিনুন",
     "callNow": "কল করুন:",
     "whatsappUs": "হোয়াটসঅ্যাপ করুন",
@@ -90,6 +92,7 @@
     "weight": "ওজন:",
     "remove": "মুছে ফেলুন",
     "orderSummary": "অর্ডার সারসংক্ষেপ",
+    "added": "যোগ হয়েছে",
     "subtotal": "সাবটোটাল",
     "deliveryCharge": "ডেলিভারি চার্জ",
     "total": "মোট",

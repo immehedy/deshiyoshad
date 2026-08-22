@@ -1,9 +1,14 @@
-import Image from 'next/image';
-import Link from 'next/link';
-import { ArrowRight, ChevronLeft, ChevronRight, Play, ShoppingCart, Star } from 'lucide-react';
-import { ProductCard } from '@/components/ProductCard';
-import { isValidLocale } from '@/lib/i18n/config';
-import { getDictionary } from '@/lib/i18n/get-dictionary';
+import Image from "next/image";
+import Link from "next/link";
+import {
+  ArrowRight,
+  Play,
+  ShoppingCart,
+  Star,
+} from "lucide-react";
+import { ProductCard } from "@/components/ProductCard";
+import { isValidLocale } from "@/lib/i18n/config";
+import { getDictionary } from "@/lib/i18n/get-dictionary";
 import {
   getBlogPosts,
   getFeaturedProducts,
@@ -11,7 +16,7 @@ import {
   getReviews,
   getSectionContent,
   getVideoAlbums,
-} from '@/lib/contentful/queries';
+} from "@/lib/contentful/queries";
 
 export const revalidate = 3600;
 
@@ -21,7 +26,7 @@ export default async function HomePage({
   params: Promise<{ locale: string }>;
 }) {
   const { locale: rawLocale } = await params;
-  const locale = isValidLocale(rawLocale) ? rawLocale : 'en';
+  const locale = isValidLocale(rawLocale) ? rawLocale : "en";
 
   const [dict, hero, products, blogPosts, reviews, videoAlbums, trustSection] =
     await Promise.all([
@@ -31,91 +36,114 @@ export default async function HomePage({
       getBlogPosts(locale),
       getReviews(locale),
       getVideoAlbums(locale),
-      getSectionContent('home-trust', locale),
+      getSectionContent("home-trust", locale),
     ]);
 
   const home = dict.home;
 
+  const hasMainText =
+    Boolean(
+      hero.main.tag ||
+        hero.main.title ||
+        hero.main.subtitle ||
+        (hero.main.ctaLabel && hero.main.ctaHref)
+    ) && Boolean(hero.main.imageUrl);
+
   return (
     <main className="bg-[#fbfff8]">
       {/* Hero */}
-      {/* <section className="mx-auto max-w-7xl px-4 pt-4 md:px-5">
-        <div className="grid gap-4 lg:grid-cols-[2fr_1fr]">
-          <div className="relative min-h-[280px] overflow-hidden rounded-2xl bg-[#e7f5d7] shadow-soft md:min-h-[330px]">
+      <section className="mx-auto max-w-7xl px-3 pt-3 md:px-5 md:pt-4">
+        <div
+          className={`grid gap-3 md:gap-4 ${
+            hero.promos.length > 0 ? 'lg:grid-cols-[2fr_1fr]' : ''
+          }`}
+        >
+          <div className="relative min-h-[170px] overflow-hidden rounded-xl bg-[#e7f5d7] shadow-soft sm:min-h-[210px] md:min-h-[330px] md:rounded-2xl">
             <Image
               src={hero.main.imageUrl}
-              alt={hero.main.title}
+              alt={hero.main.title || 'Hero banner'}
               fill
               priority
+              sizes={hero.promos.length > 0 ? '(max-width: 1024px) 100vw, 66vw' : '100vw'}
               className="object-cover"
             />
 
-            <div className="absolute inset-0 bg-gradient-to-r from-white/85 via-white/40 to-transparent" />
+            {hasMainText ? (
+              <>
+                <div className="absolute inset-0 bg-gradient-to-r from-white/85 via-white/40 to-transparent" />
 
-            <div className="relative z-10 max-w-xl p-5 md:p-8">
-              <p className="text-xs font-black uppercase tracking-[0.2em] text-leaf">
-                {hero.main.tag}
-              </p>
+                <div className="relative z-10 max-w-xl p-4 md:p-8">
+                  {hero.main.tag ? (
+                    <p className="text-[10px] font-black uppercase tracking-[0.15em] text-leaf md:text-xs md:tracking-[0.2em]">
+                      {hero.main.tag}
+                    </p>
+                  ) : null}
 
-              <h1 className="mt-3 text-3xl font-black leading-tight text-soil md:text-5xl">
-                {hero.main.title}
-              </h1>
+                  {hero.main.title ? (
+                    <h1 className="mt-2 text-xl font-black leading-tight text-soil sm:text-2xl md:mt-3 md:text-5xl">
+                      {hero.main.title}
+                    </h1>
+                  ) : null}
 
-              {hero.main.subtitle ? (
-                <p className="mt-4 max-w-md text-sm leading-7 text-soil/70 md:text-base">
-                  {hero.main.subtitle}
-                </p>
-              ) : null}
+                  {hero.main.subtitle ? (
+                    <p className="mt-2 line-clamp-2 max-w-md text-xs leading-5 text-soil/70 md:mt-4 md:line-clamp-none md:text-base md:leading-7">
+                      {hero.main.subtitle}
+                    </p>
+                  ) : null}
 
-              {hero.main.ctaLabel && hero.main.ctaHref ? (
-                <Link
-                  href={hero.main.ctaHref}
-                  className="mt-5 inline-flex items-center gap-2 rounded-full bg-leaf px-5 py-3 text-sm font-black text-white shadow-soft"
-                >
-                  {hero.main.ctaLabel} <ArrowRight size={16} />
-                </Link>
-              ) : null}
-            </div>
-
-            <button className="absolute left-3 top-1/2 rounded-full bg-white p-2 text-leaf shadow-soft">
-              <ChevronLeft size={16} />
-            </button>
-
-            <button className="absolute right-3 top-1/2 rounded-full bg-white p-2 text-leaf shadow-soft">
-              <ChevronRight size={16} />
-            </button>
+                  {hero.main.ctaLabel && hero.main.ctaHref ? (
+                    <Link
+                      href={hero.main.ctaHref}
+                      className="mt-3 inline-flex items-center gap-2 rounded-full bg-leaf px-4 py-2 text-xs font-black text-white shadow-soft md:mt-5 md:px-5 md:py-3 md:text-sm">
+                      {hero.main.ctaLabel}{' '}
+                      <ArrowRight size={14} className="md:hidden" />
+                      <ArrowRight size={16} className="hidden md:block" />
+                    </Link>
+                  ) : null}
+                </div>
+              </>
+            ) : null}
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
-            {hero.promos.map((promo) => (
+          {hero.promos.length > 0 ? (
+            <div className="grid grid-cols-2 gap-3 md:gap-4 lg:grid-cols-1">
+              {hero.promos.map((promo) => (
               <div
                 key={`${promo.imageUrl}-${promo.title}`}
-                className="relative min-h-[130px] overflow-hidden rounded-2xl bg-turmeric/20 shadow-soft md:min-h-[157px]"
-              >
+                className="relative min-h-[84px] overflow-hidden rounded-xl bg-turmeric/20 shadow-soft sm:min-h-[110px] md:min-h-[157px] md:rounded-2xl">
                 <Image
                   src={promo.imageUrl}
-                  alt={promo.title}
+                  alt={promo.title || 'Promo banner'}
                   fill
-                  sizes="(max-width: 1024px) 50vw, 25vw"
+                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 50vw, 25vw"
                   className="object-cover"
                 />
 
-                <div className="absolute inset-0 bg-black/25" />
+                {promo.tag || promo.title ? (
+                  <>
+                    <div className="absolute inset-0 bg-black/25" />
 
-                <div className="absolute bottom-4 left-4 text-white">
-                  {promo.tag ? (
-                    <p className="text-xs font-black">{promo.tag}</p>
-                  ) : null}
-                  <h3 className="text-lg font-black md:text-xl">{promo.title}</h3>
-                </div>
+                    <div className="absolute bottom-2 left-3 p-1 text-white md:bottom-4 md:left-4 md:p-0">
+                      {promo.tag ? (
+                        <p className="text-[9px] font-black md:text-xs">{promo.tag}</p>
+                      ) : null}
+                      {promo.title ? (
+                        <h3 className="line-clamp-1 text-xs font-black sm:text-sm md:line-clamp-none md:text-xl">
+                          {promo.title}
+                        </h3>
+                      ) : null}
+                    </div>
+                  </>
+                ) : null}
               </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : null}
         </div>
-      </section> */}
+      </section>
 
       {/* Products */}
-      {/* <section id="products" className="mx-auto max-w-7xl px-4 py-10 md:px-5">
+      <section id="products" className="mx-auto max-w-7xl px-4 py-10 md:px-5">
         <div className="mb-6 text-center">
           <p className="text-xs font-black uppercase tracking-[0.2em] text-leaf">
             {home.featuredTag}
@@ -126,7 +154,7 @@ export default async function HomePage({
           </h2>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4 lg:grid-cols-4">
           {products.map((product) => (
             <ProductCard
               key={product.slug}
@@ -140,12 +168,11 @@ export default async function HomePage({
         <div className="mt-7 text-center">
           <Link
             href={`/${locale}/products`}
-            className="inline-flex rounded-full bg-leaf px-6 py-3 text-sm font-black text-white shadow-soft"
-          >
+            className="inline-flex rounded-full bg-leaf px-6 py-3 text-sm font-black text-white shadow-soft">
             {home.viewMore}
           </Link>
         </div>
-      </section> */}
+      </section>
 
       {/* Blog */}
       <section className="mx-auto max-w-7xl px-4 pb-10 md:px-5">
@@ -163,8 +190,7 @@ export default async function HomePage({
           {blogPosts.map((post) => (
             <article
               key={post.slug || post.title}
-              className="overflow-hidden rounded-2xl bg-white shadow-soft"
-            >
+              className="overflow-hidden rounded-2xl bg-white shadow-soft">
               <div className="relative h-36 bg-[#eef3ef]">
                 {post.imageUrl ? (
                   <Image
@@ -178,9 +204,9 @@ export default async function HomePage({
 
                 {post.date ? (
                   <div className="absolute left-4 top-4 rounded bg-white px-2 py-1 text-center text-[10px] font-black text-soil shadow">
-                    {post.date.split(' ')[0]}
+                    {post.date.split(" ")[0]}
                     <br />
-                    {post.date.split(' ')[1]}
+                    {post.date.split(" ")[1]}
                   </div>
                 ) : null}
               </div>
@@ -192,11 +218,17 @@ export default async function HomePage({
                   </span>
                 ) : null}
 
-                <h3 className="mt-4 text-base font-black text-soil">{post.title}</h3>
+                <h3 className="mt-4 text-base font-black text-soil">
+                  {post.title}
+                </h3>
 
-                <p className="mt-2 text-xs leading-6 text-soil/60">{post.excerpt}</p>
+                <p className="mt-2 text-xs leading-6 text-soil/60">
+                  {post.excerpt}
+                </p>
 
-                <a href="#" className="mt-4 inline-flex text-sm font-black text-leaf">
+                <a
+                  href="#"
+                  className="mt-4 inline-flex text-sm font-black text-leaf">
                   {home.continueReading}
                 </a>
               </div>
@@ -223,8 +255,7 @@ export default async function HomePage({
               {reviews.slice(0, 3).map((review, index) => (
                 <div
                   key={`${review.name}-${index}`}
-                  className="rounded-2xl bg-white p-5 text-center shadow-soft"
-                >
+                  className="rounded-2xl bg-white p-5 text-center shadow-soft">
                   {review.avatarUrl ? (
                     <Image
                       src={review.avatarUrl}
@@ -242,14 +273,18 @@ export default async function HomePage({
                       <Star
                         key={star}
                         size={13}
-                        fill={star < review.rating ? 'currentColor' : 'none'}
+                        fill={star < review.rating ? "currentColor" : "none"}
                       />
                     ))}
                   </div>
 
-                  <p className="mt-3 text-xs leading-6 text-soil/65">{review.text}</p>
+                  <p className="mt-3 text-xs leading-6 text-soil/65">
+                    {review.text}
+                  </p>
 
-                  <h4 className="mt-3 text-sm font-black text-soil">{review.name}</h4>
+                  <h4 className="mt-3 text-sm font-black text-soil">
+                    {review.name}
+                  </h4>
                 </div>
               ))}
             </div>
@@ -276,8 +311,7 @@ export default async function HomePage({
                       href={item.videoUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="group relative flex aspect-video items-end justify-between rounded-xl bg-black p-4 text-white"
-                    >
+                      className="group relative flex aspect-video items-end justify-between rounded-xl bg-black p-4 text-white">
                       {item.thumbnailUrl ? (
                         <Image
                           src={item.thumbnailUrl}
@@ -340,8 +374,7 @@ export default async function HomePage({
             {trustSection.ctaLabel && trustSection.ctaHref ? (
               <Link
                 href={trustSection.ctaHref}
-                className="inline-flex items-center justify-center gap-2 rounded-full bg-leaf px-6 py-3 text-sm font-black text-white shadow-soft"
-              >
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-leaf px-6 py-3 text-sm font-black text-white shadow-soft">
                 <ShoppingCart size={16} />
                 {trustSection.ctaLabel}
               </Link>
