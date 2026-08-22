@@ -8,7 +8,7 @@
     "view": "View",
     "items": "items",
     "currency": "৳",
-    "addToCart": "Add to Cart",
+    "addToCart": "Add Cart",
     "orderNow": "Order Now"
   },
   "header": {
@@ -66,7 +66,7 @@
     "ingredients": "Ingredients",
     "nutritionInfo": "Nutrition Information",
     "selectOption": "Select Option:",
-    "addToCart": "Add to Cart",
+    "addToCart": "Add Cart",
     "buyNow": "Buy Now",
     "callNow": "Call Now:",
     "whatsappUs": "WhatsApp Us",
