@@ -50,6 +50,12 @@ export default async function HomePage({
     8
   );
 
+  const categorizedProductCount = products.filter(
+    (product) => product.categorySlug?.trim()
+  ).length;
+
+  const showCategories = categories.length > 0 && categorizedProductCount > 0;
+
   const hasMainText =
     Boolean(
       hero.main.tag ||
@@ -157,7 +163,7 @@ export default async function HomePage({
       </section>
 
       {/* Categories */}
-      {categories.length > 0 ? (
+      {showCategories ? (
         <section className="mx-auto max-w-7xl px-4 py-10 md:px-5">
           <div className="mb-6 text-center">
             <p className="text-xs font-black uppercase tracking-[0.2em] text-leaf">
