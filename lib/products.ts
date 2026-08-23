@@ -9,6 +9,7 @@ type CategorySource = {
   slug: string;
   title: Localized;
   description?: Localized;
+  image?: string;
 };
 
 const categorySources: CategorySource[] = [
@@ -19,6 +20,8 @@ const categorySources: CategorySource[] = [
       en: 'Slow-cooked pure desi ghee.',
       bn: 'ধীরে রান্না করা খাঁটি দেশি ঘি।',
     },
+    image:
+      'https://images.unsplash.com/photo-1628088062854-d1870b4553da?q=80&w=800&auto=format&fit=crop',
   },
   {
     slug: 'honey',
@@ -27,6 +30,8 @@ const categorySources: CategorySource[] = [
       en: 'Raw honey from natural sources.',
       bn: 'প্রাকৃতিক উৎস থেকে কাঁচা মধু।',
     },
+    image:
+      'https://images.unsplash.com/photo-1587049352851-8d4e89133924?q=80&w=800&auto=format&fit=crop',
   },
   {
     slug: 'oil',
@@ -35,6 +40,8 @@ const categorySources: CategorySource[] = [
       en: 'Cold pressed traditional oils.',
       bn: 'কোল্ড প্রেসড ঐতিহ্যবাহী তেল।',
     },
+    image:
+      'https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?q=80&w=800&auto=format&fit=crop',
   },
   {
     slug: 'pantry',
@@ -43,6 +50,8 @@ const categorySources: CategorySource[] = [
       en: 'Everyday organic pantry essentials.',
       bn: 'প্রতিদিনের অর্গানিক প্যান্ট্রি পণ্য।',
     },
+    image:
+      'https://images.unsplash.com/photo-1615485500704-8e990f9900f7?q=80&w=800&auto=format&fit=crop',
   },
 ];
 
@@ -220,7 +229,7 @@ export function getStaticCategories(locale: Locale) {
     slug: source.slug,
     title: pick(source.title, locale),
     description: source.description ? pick(source.description, locale) : null,
-    imageUrl: null,
+    imageUrl: source.image ?? null,
   }));
 }
 

@@ -30,6 +30,8 @@
     "honeyTitle": "প্রাকৃতিক মিষ্টতা",
     "featuredTag": "নির্বাচিত পণ্য",
     "featuredTitle": "জনপ্রিয় অর্গানিক পণ্য",
+    "categoriesTag": "ক্যাটাগরি",
+    "categoriesTitle": "ক্যাটাগরি অনুযায়ী কিনুন",
     "viewMore": "আরও দেখুন",
     "blogTag": "সর্বশেষ ব্লগ",
     "blogTitle": "নতুন খবর পড়ুন",
@@ -155,7 +157,7 @@
   },
   "productsPage": {
     "title": "সকল পণ্য",
-    "heading": "সকল পণ্য",
+    "heading": "সর্বশেষ পণ্য",
     "empty": "কোনো পণ্য পাওয়া যায়নি।",
     "categoriesLabel": "ক্যাটাগরি",
     "allLabel": "সব"

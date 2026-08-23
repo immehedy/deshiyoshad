@@ -2,12 +2,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Play, Quote, ShoppingCart, Star } from "lucide-react";
 import { ProductCard } from "@/components/ProductCard";
+import { ReviewerAvatar } from "@/components/ReviewerAvatar";
 import { isValidLocale } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 import {
-  getBlogPosts,
-  getFeaturedProducts,
+  getCategories,
   getHeroBanners,
+  getProducts,
   getReviews,
   getSectionContent,
   getVideoAlbums,
@@ -23,18 +24,31 @@ export default async function HomePage({
   const { locale: rawLocale } = await params;
   const locale = isValidLocale(rawLocale) ? rawLocale : "en";
 
-  const [dict, hero, products, blogPosts, reviews, videoAlbums, trustSection] =
-    await Promise.all([
-      getDictionary(locale),
-      getHeroBanners(locale),
-      getFeaturedProducts(locale),
-      getBlogPosts(locale),
-      getReviews(locale),
-      getVideoAlbums(locale),
-      getSectionContent("home-trust", locale),
-    ]);
+  const [
+    dict,
+    hero,
+    products,
+    categories,
+    reviews,
+    videoAlbums,
+    trustSection,
+  ] = await Promise.all([
+    getDictionary(locale),
+    getHeroBanners(locale),
+    getProducts(locale),
+    getCategories(locale),
+    getReviews(locale),
+    getVideoAlbums(locale),
+    getSectionContent("home-trust", locale),
+  ]);
 
   const home = dict.home;
+
+  const featured = products.filter((product) => product.featured);
+  const featuredProducts = (featured.length > 0 ? featured : products).slice(
+    0,
+    8
+  );
 
   const hasMainText =
     Boolean(
@@ -142,6 +156,70 @@ export default async function HomePage({
         </div>
       </section>
 
+      {/* Categories */}
+      {categories.length > 0 ? (
+        <section className="mx-auto max-w-7xl px-4 py-10 md:px-5">
+          <div className="mb-6 text-center">
+            <p className="text-xs font-black uppercase tracking-[0.2em] text-leaf">
+              {home.categoriesTag}
+            </p>
+
+            <h2 className="mt-2 text-2xl font-black text-soil md:text-3xl">
+              {home.categoriesTitle}
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
+            {categories.map((category) => {
+              const itemCount = products.filter(
+                (product) => product.categorySlug === category.slug
+              ).length;
+
+              return (
+                <Link
+                  key={category.slug}
+                  href={`/${locale}/category/${category.slug}`}
+                  className="group relative min-h-[120px] overflow-hidden rounded-xl bg-leaf/10 shadow-soft transition duration-300 hover:-translate-y-1 sm:min-h-[150px] md:min-h-[190px] md:rounded-2xl">
+                  {category.imageUrl ? (
+                    <Image
+                      src={category.imageUrl}
+                      alt={category.title}
+                      fill
+                      sizes="(max-width: 768px) 50vw, 25vw"
+                      className="object-cover transition duration-500 group-hover:scale-105"
+                    />
+                  ) : null}
+
+                  <div
+                    className={`absolute inset-0 ${
+                      category.imageUrl
+                        ? "bg-gradient-to-t from-black/70 via-black/25 to-transparent"
+                        : "bg-gradient-to-t from-leaf/25 to-transparent"
+                    }`}
+                  />
+
+                  <div className="absolute inset-x-0 bottom-0 p-3 md:p-4">
+                    <h3
+                      className={`text-sm font-black sm:text-base md:text-lg ${
+                        category.imageUrl ? "text-white" : "text-soil"
+                      }`}>
+                      {category.title}
+                    </h3>
+
+                    <p
+                      className={`mt-0.5 text-[10px] font-bold md:text-xs ${
+                        category.imageUrl ? "text-white/80" : "text-soil/60"
+                      }`}>
+                      {itemCount} {dict.common.items}
+                    </p>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </section>
+      ) : null}
+
       {/* Products */}
       <section id="products" className="mx-auto max-w-7xl px-4 py-10 md:px-5">
         <div className="mb-6 text-center">
@@ -155,7 +233,7 @@ export default async function HomePage({
         </div>
 
         <div className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4 lg:grid-cols-4">
-          {products.map((product) => (
+          {featuredProducts.map((product) => (
             <ProductCard
               key={product.slug}
               product={product}
@@ -216,14 +294,6 @@ export default async function HomePage({
 
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {reviews.slice(0, 6).map((review, index) => {
-                const initials = review.name
-                  .split(" ")
-                  .filter(Boolean)
-                  .slice(0, 2)
-                  .map((word) => word[0])
-                  .join("")
-                  .toUpperCase();
-
                 return (
                   <figure
                     key={`${review.name}-${index}`}
@@ -250,19 +320,11 @@ export default async function HomePage({
                     </blockquote>
 
                     <figcaption className="mt-5 flex items-center gap-3 border-t border-soil/5 pt-4">
-                      {review.avatarUrl ? (
-                        <Image
-                          src={review.avatarUrl}
-                          alt={review.name}
-                          width={44}
-                          height={44}
-                          className="h-11 w-11 rounded-full object-cover"
-                        />
-                      ) : (
-                        <span className="grid h-11 w-11 place-items-center rounded-full bg-leaf/10 text-xs font-black text-leaf">
-                          {initials || "★"}
-                        </span>
-                      )}
+                      <ReviewerAvatar
+                        name={review.name}
+                        avatarUrl={review.avatarUrl}
+                        index={index}
+                      />
 
                       <div>
                         <h4 className="text-sm font-black text-soil">
