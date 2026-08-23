@@ -30,6 +30,8 @@
     "honeyTitle": "Natural Sweetness",
     "featuredTag": "Featured Products",
     "featuredTitle": "Popular Organic Products",
+    "categoriesTag": "Categories",
+    "categoriesTitle": "Shop by Category",
     "viewMore": "View More",
     "blogTag": "Latest Blog",
     "blogTitle": "Read Latest News",
@@ -155,7 +157,7 @@
   },
   "productsPage": {
     "title": "All Products",
-    "heading": "All Products",
+    "heading": "Latest Products",
     "empty": "No products found.",
     "categoriesLabel": "Categories",
     "allLabel": "All"

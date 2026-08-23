@@ -356,7 +356,7 @@ function buildFallbackBrand(locale: Locale): BrandConfig {
     faviconUrl: null,
     topBarText: t.topbar,
     orderCtaLabel: t.orderNow,
-    orderCtaHref: `/${locale}/checkout`,
+    orderCtaHref: `/${locale}/products`,
     phone: "+8809613821489",
     phoneDisplay: "+8809613821489",
     email: "hello@deshiyoshad.com",
@@ -661,6 +661,33 @@ export async function getFeaturedProducts(
   const featured = products.filter((product) => product.featured);
 
   return (featured.length > 0 ? featured : products).slice(0, limit);
+}
+
+export async function getLatestProducts(
+  locale: Locale,
+  limit?: number
+): Promise<Product[]> {
+  const products = await withFallback(
+    'latestProducts',
+    async () => {
+      const { items, includes } = await fetchEntries<ProductFields>(
+        'product',
+        getContentfulLocale(locale),
+        { order: '-sys.createdAt' }
+      );
+
+      if (items.length === 0) return null;
+
+      const mapped = items
+        .map((item) => mapProductEntry(item, includes, locale))
+        .filter((product): product is Product => Boolean(product));
+
+      return mapped.length > 0 ? mapped : null;
+    },
+    async () => [...(await getStaticProducts(locale))].reverse()
+  );
+
+  return limit ? products.slice(0, limit) : products;
 }
 
 function mapReviewEntry(

@@ -16,7 +16,7 @@ export function Header({ brand }: { brand: BrandConfig }) {
 
   const topBarText = brand.topBarText || t.topbar;
   const orderLabel = brand.orderCtaLabel || t.orderNow;
-  const orderHref = brand.orderCtaHref || `/${locale}/checkout`;
+  const orderHref = brand.orderCtaHref || `/${locale}/products`;
 
   return (
     <>

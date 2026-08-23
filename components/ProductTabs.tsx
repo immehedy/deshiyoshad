@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Star } from 'lucide-react';
+import { ReviewerAvatar } from '@/components/ReviewerAvatar';
 import { useI18n } from '@/lib/i18n/provider';
 import type { Review } from '@/lib/types';
 
@@ -130,7 +131,16 @@ export function ProductTabs({
 
                 <p className="mt-4 text-sm leading-7 text-soil/65">{review.text}</p>
 
-                <h4 className="mt-4 font-black text-soil">{review.name}</h4>
+                <div className="mt-4 flex items-center gap-3">
+                  <ReviewerAvatar
+                    name={review.name}
+                    avatarUrl={review.avatarUrl}
+                    index={index}
+                    size={36}
+                  />
+
+                  <h4 className="font-black text-soil">{review.name}</h4>
+                </div>
               </div>
             ))}
           </div>

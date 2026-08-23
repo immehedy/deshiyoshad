@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { ProductCard } from '@/components/ProductCard';
 import { isValidLocale } from '@/lib/i18n/config';
 import { getDictionary } from '@/lib/i18n/get-dictionary';
-import { getCategories, getProducts } from '@/lib/contentful/queries';
+import { getCategories, getLatestProducts } from '@/lib/contentful/queries';
 
 export const revalidate = 3600;
 
@@ -28,7 +28,7 @@ export default async function ProductsPage({
 
   const [dict, products, categories] = await Promise.all([
     getDictionary(locale),
-    getProducts(locale),
+    getLatestProducts(locale),
     getCategories(locale),
   ]);
 
