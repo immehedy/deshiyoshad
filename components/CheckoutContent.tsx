@@ -2,9 +2,10 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { CheckCircle, X } from 'lucide-react';
 import { clearCart, getCart, type CartItem } from '@/lib/cart-store';
+import { trackEvent } from '@/lib/marketing';
 import { useI18n } from '@/lib/i18n/provider';
 
 export function CheckoutContent({
@@ -56,6 +57,27 @@ export function CheckoutContent({
 
   const total = subtotal + shipping.charge;
 
+  const checkoutTracked = useRef(false);
+
+  useEffect(() => {
+    if (cart.length === 0 || checkoutTracked.current) return;
+
+    checkoutTracked.current = true;
+
+    trackEvent('InitiateCheckout', {
+      value: subtotal,
+      currency: 'BDT',
+      content_ids: cart.map((item) => item.slug),
+      content_type: 'product',
+      num_items: cart.reduce((count, item) => count + item.quantity, 0),
+      contents: cart.map((item) => ({
+        id: item.slug,
+        quantity: item.quantity,
+        item_price: item.price,
+      })),
+    });
+  }, [cart, subtotal]);
+
   const canSubmit =
     cart.length > 0 &&
     customer.name.trim() &&
@@ -105,6 +127,20 @@ ${customer.notes || 'No notes'}
 
     try {
       await sendNtfyNotification();
+
+      trackEvent('Purchase', {
+        value: total,
+        currency: 'BDT',
+        content_ids: cart.map((item) => item.slug),
+        content_type: 'product',
+        num_items: cart.reduce((count, item) => count + item.quantity, 0),
+        contents: cart.map((item) => ({
+          id: item.slug,
+          quantity: item.quantity,
+          item_price: item.price,
+        })),
+      });
+
       clearCart();
       setCart([]);
       setIsModalOpen(true);

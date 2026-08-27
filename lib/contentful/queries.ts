@@ -45,6 +45,9 @@ type BrandFields = {
   seoTitle?: string;
   seoDescription?: string;
   ogImage?: unknown;
+  facebookPixelId?: string;
+  facebookDomainVerification?: string;
+  tiktokPixelId?: string;
 };
 
 type HeroVariantFields = {
@@ -323,6 +326,11 @@ async function fetchBrand(locale: Locale) {
       description: fields.seoDescription ?? "",
       ogImage: assetUrl(resolveAsset(includes, fields.ogImage)),
     },
+    marketing: {
+      facebookPixelId: fields.facebookPixelId ?? "",
+      facebookDomainVerification: fields.facebookDomainVerification ?? "",
+      tiktokPixelId: fields.tiktokPixelId ?? "",
+    },
   };
 }
 
@@ -371,6 +379,11 @@ function buildFallbackBrand(locale: Locale): BrandConfig {
       title: t.seoTitle,
       description: t.seoDesc,
       ogImage: null,
+    },
+    marketing: {
+      facebookPixelId: "",
+      facebookDomainVerification: "",
+      tiktokPixelId: "",
     },
   };
 }

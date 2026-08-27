@@ -4,14 +4,16 @@ import Link from 'next/link';
 import { useState } from 'react';
 import {
   Facebook,
-  Instagram,
+  MessageCircle,
   Minus,
   Phone,
   Plus,
   ShoppingCart,
+  Twitter,
   Youtube,
 } from 'lucide-react';
 import { addToCart, type CartProduct } from '@/lib/cart-store';
+import { trackEvent } from '@/lib/marketing';
 import { useI18n } from '@/lib/i18n/provider';
 
 type ProductOption = {
@@ -52,10 +54,29 @@ export function ProductPurchasePanel({
     weight: selectedOption.label,
   };
 
+  function trackAddToCart(quantity: number) {
+    trackEvent('AddToCart', {
+      content_name: selectedProduct.name,
+      content_ids: [selectedProduct.slug],
+      content_type: 'product',
+      value: selectedProduct.price * quantity,
+      currency: 'BDT',
+      contents: [
+        {
+          id: selectedProduct.slug,
+          quantity,
+          item_price: selectedProduct.price,
+        },
+      ],
+    });
+  }
+
   function handleAddToCart() {
     for (let i = 0; i < quantity; i++) {
       addToCart(selectedProduct);
     }
+
+    trackAddToCart(quantity);
   }
 
   function handleBuyNow() {
@@ -63,7 +84,21 @@ export function ProductPurchasePanel({
       addToCart(selectedProduct);
     }
 
+    trackAddToCart(quantity);
     window.location.href = `/${locale}/checkout`;
+  }
+
+  function shareProduct(target: 'facebook' | 'whatsapp' | 'twitter') {
+    const url = window.location.href;
+    const text = selectedProduct.name;
+
+    const shareUrls = {
+      facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
+      whatsapp: `https://wa.me/?text=${encodeURIComponent(`${text} ${url}`)}`,
+      twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`,
+    };
+
+    window.open(shareUrls[target], '_blank', 'noopener,noreferrer,width=640,height=580');
   }
 
   return (
@@ -161,26 +196,37 @@ export function ProductPurchasePanel({
       <div className="mt-6 flex items-center gap-3 border-t border-soil/10 pt-6">
         <span className="font-bold text-soil">{t.share}</span>
 
-        <Link
-          href="https://facebook.com"
-          target="_blank"
-          className="grid h-9 w-9 place-items-center rounded-full border border-soil/10 text-soil/60"
+        <button
+          type="button"
+          aria-label="Share on Facebook"
+          onClick={() => shareProduct('facebook')}
+          className="grid h-9 w-9 place-items-center rounded-full border border-soil/10 text-soil/60 transition hover:border-leaf hover:text-leaf"
         >
           <Facebook size={16} />
-        </Link>
+        </button>
 
-        <Link
-          href="https://instagram.com"
-          target="_blank"
-          className="grid h-9 w-9 place-items-center rounded-full border border-soil/10 text-soil/60"
+        <button
+          type="button"
+          aria-label="Share on WhatsApp"
+          onClick={() => shareProduct('whatsapp')}
+          className="grid h-9 w-9 place-items-center rounded-full border border-soil/10 text-soil/60 transition hover:border-leaf hover:text-leaf"
         >
-          <Instagram size={16} />
-        </Link>
+          <MessageCircle size={16} />
+        </button>
+
+        <button
+          type="button"
+          aria-label="Share on X"
+          onClick={() => shareProduct('twitter')}
+          className="grid h-9 w-9 place-items-center rounded-full border border-soil/10 text-soil/60 transition hover:border-leaf hover:text-leaf"
+        >
+          <Twitter size={16} />
+        </button>
 
         <Link
           href="https://youtube.com"
           target="_blank"
-          className="grid h-9 w-9 place-items-center rounded-full border border-soil/10 text-soil/60"
+          className="grid h-9 w-9 place-items-center rounded-full border border-soil/10 text-soil/60 transition hover:border-leaf hover:text-leaf"
         >
           <Youtube size={16} />
         </Link>
