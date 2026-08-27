@@ -6,6 +6,7 @@ import { ProductCard } from '@/components/ProductCard';
 import { ProductGallery } from '@/components/ProductGallery';
 import { ProductPurchasePanel } from '@/components/ProductPurchasePanel';
 import { ProductTabs } from '@/components/ProductTabs';
+import { TrackEvent } from '@/components/marketing/TrackEvent';
 import {
   getBrandConfig,
   getProductBySlug,
@@ -43,7 +44,7 @@ export async function generateMetadata({
 }: {
   params: Promise<{ locale: string; slug: string }>;
 }): Promise<Metadata> {
-  const { product } = await resolveParams(params);
+  const { locale, slug, product } = await resolveParams(params);
 
   if (!product) return {};
 
@@ -53,7 +54,17 @@ export async function generateMetadata({
   return {
     title,
     description,
+    alternates: {
+      canonical: `/${locale}/product/${slug}`,
+    },
     openGraph: {
+      type: 'website',
+      title,
+      description,
+      images: product.image ? [product.image] : undefined,
+    },
+    twitter: {
+      card: 'summary_large_image',
       title,
       description,
       images: product.image ? [product.image] : undefined,
@@ -132,6 +143,18 @@ export default async function ProductPage({
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+
+      <TrackEvent
+        event="ViewContent"
+        payload={{
+          content_name: product.name,
+          content_ids: [product.slug],
+          content_type: 'product',
+          content_category: product.category,
+          value: product.price,
+          currency: 'BDT',
+        }}
       />
 
       {/* Product Summary */}

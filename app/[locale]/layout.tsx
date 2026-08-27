@@ -7,6 +7,8 @@ import { isValidLocale, locales } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { I18nProvider } from "@/lib/i18n/provider";
 import { getBrandConfig, getCategories } from "@/lib/contentful/queries";
+import { Pixels } from "@/components/marketing/Pixels";
+import { getSiteUrl } from "@/lib/site";
 import "../globals.css";
 
 export const revalidate = 3600;
@@ -26,25 +28,36 @@ export async function generateMetadata({
   const brand = await getBrandConfig(locale);
 
   const metadata: Metadata = {
+    metadataBase: new URL(getSiteUrl()),
     title: {
       default: brand.seo.title,
       template: `%s | ${brand.name}`,
     },
     description: brand.seo.description,
-    metadataBase: new URL("https://deshiyoshad.com"),
     alternates: {
       languages: {
         en: "/en",
         bn: "/bn",
       },
     },
-  };
-
-  if (brand.seo.ogImage) {
-    metadata.openGraph = {
+    openGraph: {
+      type: "website",
+      siteName: brand.name,
       title: brand.seo.title,
       description: brand.seo.description,
-      images: [brand.seo.ogImage],
+      images: brand.seo.ogImage ? [brand.seo.ogImage] : undefined,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: brand.seo.title,
+      description: brand.seo.description,
+      images: brand.seo.ogImage ? [brand.seo.ogImage] : undefined,
+    },
+  };
+
+  if (brand.marketing.facebookDomainVerification) {
+    metadata.other = {
+      "facebook-domain-verification": brand.marketing.facebookDomainVerification,
     };
   }
 
@@ -85,6 +98,10 @@ export default async function RootLayout({
             categories={categories}
           />
           <FloatingCart />
+          <Pixels
+            metaPixelId={brand.marketing.facebookPixelId}
+            tiktokPixelId={brand.marketing.tiktokPixelId}
+          />
         </body>
       </html>
     </I18nProvider>

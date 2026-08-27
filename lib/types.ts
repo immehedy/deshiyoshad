@@ -21,6 +21,11 @@ export type BrandConfig = {
     description: string;
     ogImage: string | null;
   };
+  marketing: {
+    facebookPixelId: string;
+    facebookDomainVerification: string;
+    tiktokPixelId: string;
+  };
 };
 
 export type HeroBanner = {
